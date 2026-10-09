@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
   ShoppingBag,
   PlusCircle,
   Menu,
@@ -8,13 +7,7 @@ import {
   Archive,
   BookOpen,
   Compass,
-  User,
-  ShieldCheck,
-  LogOut,
-  Scissors,
-  Users,
 } from 'lucide-react';
-import { AppUser } from '../types/auth';
 
 interface HeaderProps {
   activeTab: 'archive' | 'studio' | 'lookbook' | 'guides';
@@ -22,10 +15,6 @@ interface HeaderProps {
   wardrobeCount: number;
   openWardrobeDrawer: () => void;
   openCmsModal: () => void;
-  currentUser?: AppUser | null;
-  onOpenAuthModal?: () => void;
-  onLogout?: () => void;
-  onOpenAdminModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -34,13 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   wardrobeCount,
   openWardrobeDrawer,
   openCmsModal,
-  currentUser,
-  onOpenAuthModal,
-  onLogout,
-  onOpenAdminModal,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
   const handleNavClick = (tab: 'archive' | 'studio' | 'lookbook' | 'guides') => {
     setActiveTab(tab);
@@ -69,19 +53,17 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'pb-1'
               }`}
             >
-              Kho Di Sản
+              Trang Chủ
             </button>
 
-            {/* Sửa phần tên Phòng Phối Đồ thành Xưởng May */}
             <button
               onClick={() => handleNavClick('studio')}
-              className={`whitespace-nowrap transition-colors hover:text-[#1A1918] flex items-center gap-1.5 cursor-pointer ${
+              className={`whitespace-nowrap transition-colors hover:text-[#1A1918] cursor-pointer ${
                 activeTab === 'studio'
                   ? 'text-[#9E2A2B] font-semibold border-b-2 border-[#9E2A2B] pb-1'
                   : 'pb-1'
               }`}
             >
-              <Scissors className="w-3.5 h-3.5 text-[#9E2A2B]" />
               Xưởng May
             </button>
 
@@ -108,97 +90,16 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Zone 3: Actions (Auth + Thêm Trang Phục + Tủ Đồ) */}
+          {/* Zone 3: Actions (Thêm Trang Phục + Tủ Đồ) */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* User Account / Auth Button */}
-            {currentUser ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                  className="inline-flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold bg-white hover:bg-[#F8F5EE] border border-[#DDD6CA] rounded-md transition-all shadow-2xs cursor-pointer"
-                >
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white ${
-                    currentUser.role === 'admin' ? 'bg-[#9E2A2B]' : 'bg-[#57534E]'
-                  }`}>
-                    {currentUser.displayName.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <span className="max-w-[100px] truncate hidden sm:inline text-[#1A1918]">
-                    {currentUser.displayName}
-                  </span>
-                  <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
-                    currentUser.role === 'admin'
-                      ? 'bg-[#9E2A2B] text-white'
-                      : 'bg-[#EDE8DF] text-[#57534E]'
-                  }`}>
-                    {currentUser.role === 'admin' ? 'Admin' : 'Thành Viên'}
-                  </span>
-                </button>
-
-                {isUserDropdownOpen && (
-                  <div className="absolute right-0 mt-1.5 w-60 bg-white border border-[#E7E2D8] rounded-xl shadow-lg p-2 z-50 text-xs animate-in fade-in duration-150">
-                    <div className="p-2 border-b border-[#F2EFE9] space-y-0.5">
-                      <div className="font-bold text-[#1A1918] truncate">{currentUser.displayName}</div>
-                      <div className="text-[11px] text-[#78716C] truncate">{currentUser.email}</div>
-                      <div className="pt-1">
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                          currentUser.role === 'admin' ? 'bg-[#9E2A2B]/10 text-[#9E2A2B]' : 'bg-[#EDE8DF] text-[#57534E]'
-                        }`}>
-                          Quyền: {currentUser.role === 'admin' ? 'Quản Trị Viên (Admin)' : 'Thành Viên'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="py-1 space-y-0.5">
-                      {currentUser.role === 'admin' && onOpenAdminModal && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsUserDropdownOpen(false);
-                            onOpenAdminModal();
-                          }}
-                          className="w-full text-left px-2.5 py-2 hover:bg-[#FAF8F5] text-[#9E2A2B] rounded-md font-semibold flex items-center gap-2 cursor-pointer"
-                        >
-                          <Users className="w-3.5 h-3.5" />
-                          <span>Duyệt & Quản Lý Admin</span>
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsUserDropdownOpen(false);
-                          onLogout?.();
-                        }}
-                        className="w-full text-left px-2.5 py-2 hover:bg-[#FDF2F2] text-[#831F20] rounded-md font-medium flex items-center gap-2 cursor-pointer"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Đăng Xuất</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenAuthModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1A1918] bg-white hover:bg-[#FAF8F5] border border-[#DDD6CA] rounded-md transition-all shadow-2xs cursor-pointer"
-                title="Đăng ký hoặc đăng nhập bằng Gmail cá nhân"
-              >
-                <User className="w-3.5 h-3.5 text-[#9E2A2B]" />
-                <span>Đăng Nhập / Đăng Ký</span>
-              </button>
-            )}
-
             {/* Thêm trang phục - nút nhanh trên máy tính/tablet */}
             <button
               onClick={openCmsModal}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1A1918] bg-[#F1EDE6] hover:bg-[#E7E2D8] border border-[#DDD6CA] rounded-md transition-all whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1A1918] bg-[#F1EDE6] hover:bg-[#E7E2D8] border border-[#DDD6CA] rounded-md transition-all whitespace-nowrap cursor-pointer shadow-2xs"
               title="Thêm hoặc tải ảnh trang phục mới"
             >
               <PlusCircle className="w-3.5 h-3.5 text-[#9E2A2B]" />
-              Thêm Trang Phục
+              <span>Thêm Trang Phục</span>
             </button>
 
             {/* Nút Tủ Đồ */}
@@ -235,64 +136,6 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Bảng điều hướng dạng xổ xuống (Mobile Drawer / Dropdown) */}
         {isMobileMenuOpen && (
           <div className="lg:hidden pt-3 pb-2 border-t border-[#EAE6DF] mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            {/* User status in mobile menu */}
-            <div className="p-2 mb-2 bg-[#FAF8F5] rounded-lg border border-[#EDE8DF] flex items-center justify-between">
-              {currentUser ? (
-                <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs text-white ${
-                    currentUser.role === 'admin' ? 'bg-[#9E2A2B]' : 'bg-[#57534E]'
-                  }`}>
-                    {currentUser.displayName.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#1A1918]">{currentUser.displayName}</div>
-                    <div className="text-[10px] text-[#9E2A2B] font-semibold">
-                      {currentUser.role === 'admin' ? 'Quản Trị Viên (Admin)' : 'Thành Viên'}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    onOpenAuthModal?.();
-                  }}
-                  className="w-full py-1.5 text-xs font-semibold text-[#9E2A2B] text-center"
-                >
-                  Đăng Nhập / Đăng Ký Bằng Gmail
-                </button>
-              )}
-
-              {currentUser && (
-                <div className="flex items-center gap-1.5">
-                  {currentUser.role === 'admin' && onOpenAdminModal && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        onOpenAdminModal();
-                      }}
-                      className="text-[10px] px-2 py-1 bg-white border border-[#DDD6CA] rounded text-[#9E2A2B] font-semibold"
-                    >
-                      Duyệt Admin
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      onLogout?.();
-                    }}
-                    className="p-1 text-[#831F20]"
-                    title="Đăng xuất"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-
             <div className="space-y-1">
               <button
                 onClick={() => handleNavClick('archive')}
@@ -303,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <Archive className="w-4 h-4 shrink-0" />
-                <span>Kho Di Sản</span>
+                <span>Trang Chủ</span>
               </button>
 
               <button
@@ -314,7 +157,6 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-[#1A1918] hover:bg-[#F2EFE9]'
                 }`}
               >
-                <Scissors className="w-4 h-4 shrink-0" />
                 <span>Xưởng May</span>
               </button>
 

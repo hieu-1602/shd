@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
@@ -12,7 +13,158 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Shared Dataset file persistence
+const DATA_DIR = path.resolve(__dirname, 'data');
+const DATA_FILE = path.resolve(DATA_DIR, 'shared_data.json');
+
+function loadSharedData() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (fs.existsSync(DATA_FILE)) {
+      const content = fs.readFileSync(DATA_FILE, 'utf-8');
+      const parsed = JSON.parse(content);
+      return {
+        costumes: Array.isArray(parsed.costumes) ? parsed.costumes : [],
+        lookbooks: Array.isArray(parsed.lookbooks) ? parsed.lookbooks : [],
+      };
+    }
+  } catch (err) {
+    console.error('Error loading shared data:', err);
+  }
+  return { costumes: [], lookbooks: [] };
+}
+
+let sharedData = loadSharedData();
+
+function saveSharedData() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(DATA_FILE, JSON.stringify(sharedData, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving shared data:', err);
+  }
+}
+
+// API: Get all shared costumes and lookbooks
+app.get('/api/data', (req, res) => {
+  res.json({
+    costumes: sharedData.costumes,
+    lookbooks: sharedData.lookbooks,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// API: Add or update a costume in the shared dataset
+app.post('/api/costumes', (req, res) => {
+  try {
+    const item = req.body;
+    if (!item || !item.id) {
+      return res.status(400).json({ error: 'Invalid costume item' });
+    }
+
+    const existingIndex = sharedData.costumes.findIndex((c: any) => c.id === item.id);
+    if (existingIndex >= 0) {
+      sharedData.costumes[existingIndex] = item;
+    } else {
+      sharedData.costumes.unshift(item);
+    }
+
+    saveSharedData();
+    res.json({ success: true, item, costumes: sharedData.costumes });
+  } catch (error: any) {
+    console.error('Error adding costume:', error);
+    res.status(500).json({ error: 'Failed to add costume', message: error?.message });
+  }
+});
+
+// API: Update costume
+app.put('/api/costumes/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = req.body;
+    const existingIndex = sharedData.costumes.findIndex((c: any) => c.id === id);
+    if (existingIndex >= 0) {
+      sharedData.costumes[existingIndex] = { ...sharedData.costumes[existingIndex], ...item };
+    } else {
+      sharedData.costumes.unshift({ ...item, id });
+    }
+
+    saveSharedData();
+    res.json({ success: true, costumes: sharedData.costumes });
+  } catch (error: any) {
+    console.error('Error updating costume:', error);
+    res.status(500).json({ error: 'Failed to update costume', message: error?.message });
+  }
+});
+
+// API: Delete costume from shared dataset
+app.delete('/api/costumes/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    sharedData.costumes = sharedData.costumes.filter((c: any) => c.id !== id);
+    saveSharedData();
+    res.json({ success: true, costumes: sharedData.costumes });
+  } catch (error: any) {
+    console.error('Error deleting costume:', error);
+    res.status(500).json({ error: 'Failed to delete costume', message: error?.message });
+  }
+});
+
+// API: Add or update lookbook in shared dataset
+app.post('/api/lookbooks', (req, res) => {
+  try {
+    const item = req.body;
+    if (!item || !item.id) {
+      return res.status(400).json({ error: 'Invalid lookbook item' });
+    }
+
+    const existingIndex = sharedData.lookbooks.findIndex((l: any) => l.id === item.id);
+    if (existingIndex >= 0) {
+      sharedData.lookbooks[existingIndex] = item;
+    } else {
+      sharedData.lookbooks.unshift(item);
+    }
+
+    saveSharedData();
+    res.json({ success: true, item, lookbooks: sharedData.lookbooks });
+  } catch (error: any) {
+    console.error('Error adding lookbook:', error);
+    res.status(500).json({ error: 'Failed to add lookbook', message: error?.message });
+  }
+});
+
+// API: Delete lookbook from shared dataset
+app.delete('/api/lookbooks/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    sharedData.lookbooks = sharedData.lookbooks.filter((l: any) => l.id !== id);
+    saveSharedData();
+    res.json({ success: true, lookbooks: sharedData.lookbooks });
+  } catch (error: any) {
+    console.error('Error deleting lookbook:', error);
+    res.status(500).json({ error: 'Failed to delete lookbook', message: error?.message });
+  }
+});
+
+// API: Reset dataset to empty
+app.post('/api/reset-data', (req, res) => {
+  try {
+    sharedData.costumes = [];
+    sharedData.lookbooks = [];
+    saveSharedData();
+    res.json({ success: true, costumes: [], lookbooks: [] });
+  } catch (error: any) {
+    console.error('Error resetting data:', error);
+    res.status(500).json({ error: 'Failed to reset data', message: error?.message });
+  }
+});
 
 // Initialize GoogleGenAI SDK on the server side
 let ai: GoogleGenAI | null = null;

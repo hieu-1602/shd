@@ -1,24 +1,17 @@
 import React, { useState } from 'react';
-import { CostumeItem, CostumeCategory, EventOccasion } from '../types/vietphuc';
+import { CostumeItem, CostumeCategory } from '../types/vietphuc';
 import {
   X,
   Plus,
   Upload,
-  BookOpen,
-  FileJson,
   Download,
   RotateCcw,
   CheckCircle2,
   Trash2,
-  Sparkles,
   Layers,
-  HelpCircle,
-  AlertTriangle,
-  Info,
-  Copy,
-  Check,
-  User,
   ShieldAlert,
+  Sparkles,
+  User,
 } from 'lucide-react';
 
 interface NoCodeCMSModalProps {
@@ -29,8 +22,6 @@ interface NoCodeCMSModalProps {
   onImportJson: (items: CostumeItem[]) => void;
   onClose: () => void;
   onEquipToStudio?: (item: CostumeItem) => void;
-  isAdmin?: boolean;
-  onOpenAuthModal?: () => void;
 }
 
 export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
@@ -41,10 +32,8 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
   onImportJson,
   onClose,
   onEquipToStudio,
-  isAdmin = false,
-  onOpenAuthModal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'form' | 'guide' | 'manage'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'manage'>('form');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -99,11 +88,6 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
-
-    if (!isAdmin) {
-      setErrorMessage('Chỉ tài khoản Admin (Quản trị viên) mới có quyền thêm hình ảnh hoặc thêm trang phục mới! Vui lòng đăng nhập với tài khoản Admin.');
-      return;
-    }
 
     if (!name.trim()) return;
 
@@ -213,19 +197,7 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
             }`}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Thêm Mới Bằng Biểu Mẫu (Dễ Nhất)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('guide')}
-            className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
-              activeTab === 'guide'
-                ? 'bg-[#1A1918] text-white shadow-2xs'
-                : 'bg-white text-[#57534E] hover:text-[#1A1918] border border-[#DDD6CA]'
-            }`}
-          >
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span>Hướng Dẫn Cho Người Mới</span>
+            <span>Thêm Mới Bằng Biểu Mẫu</span>
           </button>
 
           <button
@@ -240,28 +212,6 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
             <span>Quản Lý & Sao Lưu JSON</span>
           </button>
         </div>
-
-        {/* Admin Protection Banner if not admin */}
-        {!isAdmin && (
-          <div className="p-3 bg-[#FDF2F2] border border-[#FAD2D2] text-[#831F20] text-xs rounded-xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-[#9E2A2B] shrink-0" />
-              <span>Chỉ tài khoản Admin mới có quyền thêm hình ảnh hoặc xóa hình ảnh, trang phục.</span>
-            </div>
-            {onOpenAuthModal && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenAuthModal();
-                }}
-                className="px-2.5 py-1 bg-[#9E2A2B] text-white rounded text-[11px] font-semibold hover:bg-[#831F20] shrink-0 ml-2 cursor-pointer"
-              >
-                Đăng Nhập Admin
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Error Alert Banner */}
         {errorMessage && (
@@ -542,72 +492,7 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
           </form>
         )}
 
-        {/* TAB 2: HƯỚNG DẪN DÀNH CHO NGƯỜI KHÔNG BIẾT CODE */}
-        {activeTab === 'guide' && (
-          <div className="space-y-6 text-xs md:text-sm text-[#57534E] leading-relaxed animate-in fade-in duration-200">
-            <div className="bg-[#FAF8F5] border border-[#E7E2D8] rounded-xl p-5 space-y-3">
-              <h4 className="text-base font-bold text-[#1A1918] font-display">
-                Bạn Không Biết Lập Trình? Đừng Lo, Mọi Thứ Đều Rất Đơn Giản!
-              </h4>
-              <p>
-                Trang web này được xây dựng trực quan để bất kỳ ai cũng có
-                thể tham gia đóng góp trang phục, phụ kiện vào bộ sưu tập mà không cần viết một dòng mã (code) nào. Dưới
-                đây là 2 cách bạn có thể thực hiện:
-              </p>
-            </div>
-
-            {/* HƯỚNG DẪN TẢI ẢNH TRANG PHỤC */}
-            <div className="border border-[#E7E2D8] rounded-xl p-5 space-y-2 bg-white shadow-2xs">
-              <span className="font-bold text-[#9E2A2B] uppercase text-xs">
-                Quy Trình Tải Ảnh Trang Phục Vào Website Rất Đơn Giản
-              </span>
-              <ol className="list-decimal pl-5 space-y-2.5 mt-2 text-xs">
-                <li>
-                  <strong>Bước 1:</strong> Chuẩn bị ảnh bộ trang phục hoặc món đồ của bạn trên máy tính hoặc điện thoại (hỗ trợ PNG, JPG, WEBP).
-                </li>
-                <li>
-                  <strong>Bước 2:</strong> Vào tab <strong>"Thêm Mới Bằng Biểu Mẫu"</strong>, điền tên trang phục, chọn giới tính (Nam / Nữ) và thành phần (Áo ngoài, thân trên, thân dưới...).
-                </li>
-                <li>
-                  <strong>Bước 3:</strong> Bấm nút <strong>"Chọn tệp"</strong> tải ảnh lên, rồi nhấn <strong>"Lưu & Xem Trang Phục Trực Tiếp"</strong> để hiển thị trực tiếp ảnh trang phục mà không cần nhân vật ma-nơ-canh!
-                </li>
-              </ol>
-            </div>
-
-            {/* Cách 2 */}
-            <div className="border border-[#E7E2D8] rounded-xl p-5 space-y-3 bg-white shadow-2xs">
-              <span className="font-bold text-[#1A1918] uppercase text-xs">
-                Cách 2: Quản lý hàng loạt bằng tệp dữ liệu JSON (Dành cho nộp bài thi)
-              </span>
-              <p>
-                Nếu bạn cần nhập hàng chục trang phục cùng lúc hoặc muốn nộp toàn bộ dữ liệu cho Ban
-                Giám Khảo:
-              </p>
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  onClick={handleExportJson}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#1A1918] bg-[#F1EDE6] hover:bg-[#E7E2D8] rounded-md border border-[#DDD6CA] transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5 text-[#9E2A2B]" />
-                  <span>Xuất Tệp JSON Hiện Tại</span>
-                </button>
-
-                <label className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#1A1918] hover:bg-[#9E2A2B] rounded-md cursor-pointer transition-colors">
-                  <Upload className="w-3.5 h-3.5 text-[#F4A261]" />
-                  <span>Nhập Tệp JSON Vào Web</span>
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleImportJsonFile}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: QUẢN LÝ DANH SÁCH & SAO LƯU */}
+        {/* TAB 2: QUẢN LÝ DANH SÁCH & SAO LƯU */}
         {activeTab === 'manage' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="flex items-center justify-between pb-2 border-b border-[#EAE6DF]">
@@ -651,21 +536,17 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
                       </span>
                     )}
 
-                    {isAdmin ? (
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Bạn có chắc muốn xóa "${item.name}"?`)) {
-                            onDeleteCostume(item.id);
-                          }
-                        }}
-                        className="p-1 text-[#78716C] hover:text-[#9E2A2B] transition-colors cursor-pointer"
-                        title="Xóa trang phục"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    ) : (
-                      <span className="text-[10px] text-[#A8A29E] italic">Cần quyền Admin để xóa</span>
-                    )}
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Bạn có chắc muốn xóa "${item.name}"?`)) {
+                          onDeleteCostume(item.id);
+                        }
+                      }}
+                      className="p-1 text-[#78716C] hover:text-[#9E2A2B] transition-colors cursor-pointer"
+                      title="Xóa trang phục"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}

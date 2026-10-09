@@ -29,19 +29,19 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               onClick={() => onNavigate('archive')}
               className="text-left text-[#57534E] hover:text-[#1A1918] transition-colors"
             >
-              Kho Di Sản Việt Phục
+              Trang Chủ
             </button>
             <button
               onClick={() => onNavigate('studio')}
               className="text-left text-[#57534E] hover:text-[#1A1918] transition-colors"
             >
-              Xưởng May Tương Tác
+              xưởng may
             </button>
             <button
               onClick={() => onNavigate('lookbook')}
               className="text-left text-[#57534E] hover:text-[#1A1918] transition-colors"
             >
-              Lookbook Gen Z
+              Lookbook
             </button>
             <button
               onClick={() => onNavigate('guides')}

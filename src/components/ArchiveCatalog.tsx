@@ -11,8 +11,6 @@ interface ArchiveCatalogProps {
   onDeleteCostume: (id: string) => void;
   wardrobeIds: string[];
   openCmsModal: () => void;
-  isAdmin?: boolean;
-  onOpenAuthModal?: () => void;
 }
 
 export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
@@ -22,30 +20,10 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
   onDeleteCostume,
   wardrobeIds,
   openCmsModal,
-  isAdmin = false,
-  onOpenAuthModal,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [adminNotice, setAdminNotice] = useState<string | null>(null);
-
-  const showAdminRequired = (action: string) => {
-    setAdminNotice(`Chỉ tài khoản Admin (Quản trị viên) mới có quyền ${action}. Vui lòng đăng nhập với tài khoản Admin!`);
-    setTimeout(() => setAdminNotice(null), 4000);
-  };
-
-  const handleAddCostumeClick = () => {
-    if (!isAdmin) {
-      showAdminRequired('thêm trang phục hoặc tải ảnh mới');
-      return;
-    }
-    openCmsModal();
-  };
 
   const handleDeleteCostumeClick = (item: CostumeItem) => {
-    if (!isAdmin) {
-      showAdminRequired('xóa trang phục');
-      return;
-    }
     if (window.confirm(`Bạn có chắc chắn muốn xóa "${item.name}" khỏi danh sách trang phục không?`)) {
       onDeleteCostume(item.id);
     }
@@ -65,24 +43,6 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 py-10">
-      {/* Admin Notice Bar */}
-      {adminNotice && (
-        <div className="mb-6 p-4 bg-[#FDF2F2] border border-[#FAD2D2] rounded-xl text-xs text-[#831F20] flex items-center justify-between animate-in fade-in duration-150">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-[#9E2A2B] shrink-0" />
-            <span className="font-medium">{adminNotice}</span>
-          </div>
-          {onOpenAuthModal && (
-            <button
-              onClick={onOpenAuthModal}
-              className="px-3 py-1 bg-[#9E2A2B] text-white rounded-md text-[11px] font-semibold hover:bg-[#831F20] transition-colors shrink-0 ml-3 cursor-pointer"
-            >
-              Đăng Nhập Admin
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Editorial Title & Concept Statement */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#EAE6DF]">
         <div>
@@ -111,9 +71,9 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
           </div>
 
           <button
-            onClick={handleAddCostumeClick}
+            onClick={openCmsModal}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#9E2A2B] hover:bg-[#831F20] rounded-md transition-colors whitespace-nowrap shadow-xs cursor-pointer"
-            title={isAdmin ? 'Thêm trang phục hoặc tải ảnh trang phục mới' : 'Yêu cầu quyền Admin để thêm trang phục'}
+            title="Thêm trang phục hoặc tải ảnh trang phục mới"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Thêm / Tải Ảnh Mới</span>
@@ -139,7 +99,7 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
           </p>
           <div className="pt-2">
             <button
-              onClick={handleAddCostumeClick}
+              onClick={openCmsModal}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-[#9E2A2B] hover:bg-[#831F20] rounded-md shadow-xs transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -207,17 +167,15 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
                   {/* Card Actions Footer (Bỏ nút Chi Tiết, đổi Thử Phối thành Đến Xưởng May, nút Xóa cho Admin) */}
                   <div className="pt-5 mt-4 border-t border-[#F2EFE9] flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      {/* Nút Xóa (bảo vệ quyền Admin) */}
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleDeleteCostumeClick(item)}
-                          className="inline-flex items-center p-2 text-xs text-[#A8A29E] hover:text-[#9E2A2B] hover:bg-[#FDF2F2] rounded transition-colors cursor-pointer"
-                          title={`Xóa ${item.name}`}
-                          aria-label={`Xóa ${item.name}`}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      {/* Nút Xóa trang phục */}
+                      <button
+                        onClick={() => handleDeleteCostumeClick(item)}
+                        className="inline-flex items-center p-2 text-xs text-[#A8A29E] hover:text-[#9E2A2B] hover:bg-[#FDF2F2] rounded transition-colors cursor-pointer"
+                        title={`Xóa ${item.name}`}
+                        aria-label={`Xóa ${item.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-2">
