@@ -1,0 +1,8 @@
+{
+  "name": "Việt Phục Remix - Cổ Phục Gen Z Studio",
+  "description": "Nền tảng số quảng bá và phối trang phục truyền thống Việt Nam theo phong cách Gen Z. Trải nghiệm boutique lookbook, phòng thử đồ tương tác, tra cứu quy chuẩn văn hóa và hệ thống thêm trang phục no-code.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
