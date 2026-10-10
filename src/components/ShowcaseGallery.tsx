@@ -41,12 +41,12 @@ interface CategoryMeta {
 }
 
 // Thứ tự hiển thị chuẩn xác từ trên xuống dưới theo yêu cầu:
-// bộ trang phục -> áo ngoài (mặt trước) -> áo ngoài (mặt sau) -> áo trong -> thân dưới -> giày dép -> phụ kiện
+// bộ trang phục -> áo chính (mặt trước) -> áo chính (mặt sau) -> áo phụ -> thân dưới -> giày dép -> phụ kiện
 const CATEGORY_META_LIST: CategoryMeta[] = [
   { key: 'bo_trang_phuc', label: 'BỘ TRANG PHỤC', shortLabel: 'Bộ Trang Phục' },
-  { key: 'ao_ngoai', label: 'ÁO NGOÀI (MẶT TRƯỚC)', shortLabel: 'Áo Ngoài (Mặt Trước)' },
-  { key: 'ao_ngoai_sau', label: 'ÁO NGOÀI (MẶT SAU)', shortLabel: 'Áo Ngoài (Mặt Sau)' },
-  { key: 'ao_trong', label: 'ÁO TRONG', shortLabel: 'Áo Trong' },
+  { key: 'ao_ngoai', label: 'ÁO CHÍNH (MẶT TRƯỚC)', shortLabel: 'Áo Chính (Mặt Trước)' },
+  { key: 'ao_ngoai_sau', label: 'ÁO CHÍNH (MẶT SAU)', shortLabel: 'Áo Chính (Mặt Sau)' },
+  { key: 'ao_trong', label: 'ÁO PHỤ', shortLabel: 'Áo Phụ' },
   { key: 'quan_vay', label: 'THÂN DƯỚI', shortLabel: 'Thân Dưới' },
   { key: 'giay_dep', label: 'GIÀY DÉP', shortLabel: 'Giày Dép' },
   { key: 'phu_kien', label: 'PHỤ KIỆN', shortLabel: 'Phụ Kiện' },
@@ -197,7 +197,7 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
                   <img
                     src={primaryImg}
                     alt={outfit.name}
-                    className="w-12 h-12 rounded-xl object-cover border border-[#DDD6CA] shrink-0"
+                    className="w-12 h-12 rounded-xl object-contain p-0.5 border border-[#DDD6CA] shrink-0 bg-transparent"
                   />
                 ) : (
                   <div
@@ -278,12 +278,12 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Cột trái: Ảnh chụp bộ hoặc minh họa ma-nơ-canh ảo */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="relative aspect-4/3 w-full rounded-2xl overflow-hidden bg-[#FAF8F5] border border-[#DDD6CA] flex items-center justify-center shadow-2xs">
+            <div className="relative aspect-4/3 w-full rounded-2xl overflow-hidden bg-transparent border border-[#DDD6CA] flex items-center justify-center shadow-2xs">
               {outfitImages.length > 0 ? (
                 <img
                   src={outfitImages[selectedPhotoIndex] || outfitImages[0]}
                   alt={activeOutfit.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-2"
                 />
               ) : (
                 <div className="text-center p-8 space-y-3">
@@ -322,13 +322,13 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
                     key={idx}
                     type="button"
                     onClick={() => setSelectedPhotoIndex(idx)}
-                    className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                    className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer bg-transparent flex items-center justify-center ${
                       selectedPhotoIndex === idx
                         ? 'border-[#9E2A2B] ring-2 ring-[#9E2A2B]/20'
                         : 'border-[#DDD6CA] opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt={`Góc chụp ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img src={img} alt={`Góc chụp ${idx + 1}`} className="w-full h-full object-contain p-1" />
                   </button>
                 ))}
               </div>
@@ -360,11 +360,8 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
 
               {isEditingIntro ? (
                 <div className="space-y-2 pt-1 animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between text-[11px] text-[#78716C]">
-                    <span>Ô đoạn văn lớn · Dễ dàng xem toàn bộ & hỗ trợ phím TAB để thụt đầu dòng</span>
-                  </div>
                   <textarea
-                    rows={6}
+                    rows={8}
                     value={editIntroText}
                     onChange={(e) => setEditIntroText(e.target.value)}
                     onKeyDown={(e) => {
@@ -383,7 +380,7 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
                       }
                     }}
                     placeholder="Nhập toàn bộ nội dung cảm hứng sáng tạo và nét đẹp di sản..."
-                    className="w-full p-3.5 text-xs md:text-sm text-[#1A1918] bg-white border border-[#9E2A2B]/40 rounded-xl focus:outline-none focus:border-[#9E2A2B] focus:ring-1 focus:ring-[#9E2A2B]/20 leading-relaxed font-sans resize-y min-h-[150px]"
+                    className="w-full p-4 text-xs md:text-sm text-[#1A1918] bg-[#FDFCFB] border border-[#9E2A2B]/40 rounded-xl focus:outline-none focus:border-[#9E2A2B] focus:ring-2 focus:ring-[#9E2A2B]/20 leading-relaxed font-sans resize-y min-h-[180px] shadow-2xs"
                   />
                   <div className="flex items-center justify-end gap-2">
                     <button
@@ -505,12 +502,12 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
                         >
                           <div className="space-y-3">
                             {/* Hình ảnh của món đồ */}
-                            <div className="relative aspect-4/3 w-full rounded-lg overflow-hidden bg-[#FAF8F5] border border-[#EAE6DF] flex items-center justify-center">
+                            <div className="relative aspect-4/3 w-full rounded-lg overflow-hidden bg-transparent border border-[#EAE6DF] flex items-center justify-center">
                               {item.imageUrl ? (
                                 <img
                                   src={item.imageUrl}
                                   alt={item.name}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-contain p-2"
                                 />
                               ) : (
                                 <div className="text-center p-4 space-y-1.5">

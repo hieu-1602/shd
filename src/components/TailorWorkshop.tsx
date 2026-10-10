@@ -47,23 +47,23 @@ const CATEGORY_OPTIONS: CategoryOption[] = [
   {
     key: 'ao_ngoai',
     stepNumber: 2,
-    label: '2. ÁO NGOÀI (MẶT TRƯỚC)',
-    shortLabel: 'Áo Ngoài (Mặt Trước)',
-    description: 'Lớp áo ngoài mặt trước tôn vinh khí chất cổ phục',
+    label: '2. ÁO CHÍNH (MẶT TRƯỚC)',
+    shortLabel: 'Áo Chính (Mặt Trước)',
+    description: 'Lớp áo chính mặt trước tôn vinh khí chất cổ phục',
   },
   {
     key: 'ao_ngoai_sau',
     stepNumber: 3,
-    label: '3. ÁO NGOÀI (MẶT SAU)',
-    shortLabel: 'Áo Ngoài (Mặt Sau)',
+    label: '3. ÁO CHÍNH (MẶT SAU)',
+    shortLabel: 'Áo Chính (Mặt Sau)',
     description: 'Lưng áo và nếp vải mặt sau thanh thoát',
   },
   {
     key: 'ao_trong',
     stepNumber: 4,
-    label: '4. ÁO TRONG',
-    shortLabel: 'Áo Trong',
-    description: 'Áo lót trong, áo yếm hoặc lớp áo đầu tiên',
+    label: '4. ÁO PHỤ',
+    shortLabel: 'Áo Phụ',
+    description: 'Áo lót trong, áo yếm hoặc lớp áo phụ nền nã',
   },
   {
     key: 'quan_vay',
@@ -140,6 +140,7 @@ const getDefaultCategoryDraft = (cat: CostumeCategory): CategoryDraft => {
         remixTips: 'Mặc lót bên trong áo ngũ thân, áo tấc hoặc phối layer thời thượng.',
       };
     case 'ao_ngoai':
+    case 'ao_ngoai_truoc':
       return {
         name: '',
         creatorName: '',
@@ -218,6 +219,22 @@ const getDefaultCategoryDraft = (cat: CostumeCategory): CategoryDraft => {
         culturalMeaning: 'Điểm xuyết vẻ tinh tế, quý phái và cốt cách người mặc.',
         culturalAdvisory: 'Phối tiết chế tinh tế, tránh rườm rà làm lu mờ trang phục chính.',
         remixTips: 'Túi tote lụa, kính retro hoặc khăn vấn tạo điểm nhấn di sản.',
+      };
+    default:
+      return {
+        name: '',
+        creatorName: '',
+        color: '#9E2A2B',
+        colorLabel: 'Đỏ son',
+        imageUrls: [],
+        imageUrlInput: '',
+        gender: 'Nam',
+        era: 'Triều Nguyễn',
+        region: 'Cố đô Huế',
+        material: 'Lụa tơ tằm truyền thống, gấm vân mây',
+        culturalMeaning: 'Thể hiện vẻ đẹp trang nhã, đoan chính và niềm tự hào di sản truyền thống Việt Nam.',
+        culturalAdvisory: 'Giữ phom dáng thanh thoát, đứng áo và chỉn chu.',
+        remixTips: 'Phối hợp hài hòa cùng các lớp trang phục trong phòng trưng bày.',
       };
   }
 };
@@ -322,35 +339,44 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
     });
   };
 
-  // Tạo đối tượng CostumeItem từ draft hiện tại
-  const buildCurrentCostumeItem = (): CostumeItem | null => {
-    if (!currentDraft.name.trim()) return null;
+  // Tạo đối tượng CostumeItem từ draft của bất kỳ danh mục nào
+  const buildCostumeItemFromDraft = (catKey: CostumeCategory, draft: CategoryDraft): CostumeItem | null => {
+    const catInfo = CATEGORY_OPTIONS.find((c) => c.key === catKey);
+    // Tự động dùng chung tên của bộ trang phục đã thêm ở phần 1 (Thông tin chung)
+    const effectiveName =
+      outfitName.trim() ||
+      (catInfo ? `Trang phục ${catInfo.shortLabel}` : 'Trang phục di sản');
 
-    const selectedCatInfo = CATEGORY_OPTIONS.find((c) => c.key === activeCategory);
-    const resolvedColorLabel = currentDraft.colorLabel.trim() || getVietnameseColorName(currentDraft.color);
-    const resolvedCreator = (outfitCreator.trim() || currentDraft.creatorName.trim()) || 'Người Yêu Di Sản';
+    if (!effectiveName) return null;
+
+    const resolvedColorLabel = draft.colorLabel.trim() || getVietnameseColorName(draft.color);
+    const resolvedCreator = (outfitCreator.trim() || draft.creatorName.trim()) || 'Người Yêu Di Sản';
 
     return {
       id: `item_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      name: currentDraft.name.trim(),
-      category: activeCategory,
-      era: currentDraft.era.trim() || 'Cảm hứng di sản Việt Nam',
-      region: currentDraft.region.trim() || 'Việt Nam',
+      name: effectiveName,
+      category: catKey,
+      era: draft.era.trim() || 'Cảm hứng di sản Việt Nam',
+      region: draft.region.trim() || 'Việt Nam',
       gender: outfitGender,
-      heroColor: currentDraft.color,
+      heroColor: draft.color,
       colorLabel: resolvedColorLabel,
-      availableColors: [currentDraft.color],
-      material: currentDraft.material.trim() || 'Lụa truyền thống',
-      originStory: `Trang phục ${currentDraft.name.trim()} thuộc danh mục ${selectedCatInfo?.shortLabel}, mang sắc ${resolvedColorLabel}, sáng tạo bởi ${resolvedCreator}.`,
-      culturalMeaning: currentDraft.culturalMeaning.trim() || 'Thể hiện nét đẹp đoan trang, khí chất và niềm tự hào văn hóa Việt.',
-      remixTips: currentDraft.remixTips.trim() || 'Phối cùng phong cách đương đại văn minh, tôn vinh dáng vẻ di sản.',
-      culturalAdvisory: currentDraft.culturalAdvisory.trim() || 'Giữ nguyên nét đẹp nguyên bản, phom dáng thanh thoát và chỉn chu.',
-      imageUrl: currentDraft.imageUrls[0] || undefined,
-      imageUrls: currentDraft.imageUrls.length > 0 ? currentDraft.imageUrls : undefined,
+      availableColors: [draft.color],
+      material: draft.material.trim() || 'Lụa truyền thống',
+      originStory: `Trang phục ${effectiveName} thuộc danh mục ${catInfo?.shortLabel}, mang sắc ${resolvedColorLabel}, sáng tạo bởi ${resolvedCreator}.`,
+      culturalMeaning: draft.culturalMeaning.trim() || 'Thể hiện nét đẹp đoan trang, khí chất và niềm tự hào văn hóa Việt.',
+      remixTips: draft.remixTips.trim() || 'Phối cùng phong cách đương đại văn minh, tôn vinh dáng vẻ di sản.',
+      culturalAdvisory: draft.culturalAdvisory.trim() || 'Giữ nguyên nét đẹp nguyên bản, phom dáng thanh thoát và chỉn chu.',
+      imageUrl: draft.imageUrls[0] || undefined,
+      imageUrls: draft.imageUrls.length > 0 ? draft.imageUrls : undefined,
       suitableOccasions: ['Dạo Phố & Cafe', 'Lễ Tốt Nghiệp', 'Tiệc Cưới & Dự Lễ', 'Chụp Ảnh Kỷ Yếu'],
       isCustom: true,
-      creatorName: outfitCreator.trim() || currentDraft.creatorName.trim() || undefined,
+      creatorName: outfitCreator.trim() || draft.creatorName.trim() || undefined,
     };
+  };
+
+  const buildCurrentCostumeItem = (): CostumeItem | null => {
+    return buildCostumeItemFromDraft(activeCategory, currentDraft);
   };
 
   // NÚT: "Thêm Thành Phần Này Vào Bộ Trang Phục"
@@ -358,8 +384,8 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
   const handleSaveToCurrentOutfit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!currentDraft.name.trim()) {
-      alert(`Vui lòng nhập tên trang phục cho mục ${selectedCatInfo?.shortLabel || 'đã chọn'}!`);
+    if (!outfitName.trim()) {
+      alert(`Vui lòng nhập tên bộ trang phục ở mục 1 (Thông tin chung) trước khi lưu thành phần!`);
       return;
     }
 
@@ -377,7 +403,7 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
       [activeCategory]: getDefaultCategoryDraft(activeCategory),
     }));
 
-    showNotification(`Đã thêm thành phần "${newItem.name}" vào bộ trang phục!`);
+    showNotification(`Đã thêm thành phần "${selectedCatInfo?.shortLabel || newItem.name}" vào bộ trang phục!`);
   };
 
   // Xóa một thành phần đã thêm khỏi bộ đang tạo
@@ -393,13 +419,21 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
 
     let allComponents = [...outfitComponents];
 
-    // Nếu người dùng đang nhập dở tên ở danh mục hiện tại mà chưa bấm thêm, tự động đưa vào bộ
-    if (currentDraft.name.trim()) {
-      const pendingItem = buildCurrentCostumeItem();
-      if (pendingItem) {
-        allComponents = [pendingItem, ...allComponents.filter((c) => c.id !== pendingItem.id)];
+    // Gom TẤT CẢ các danh mục có ảnh đã tải lên từ bất kỳ mục nào (không chỉ riêng tab đang mở)
+    CATEGORY_OPTIONS.forEach((catOpt) => {
+      const d = drafts[catOpt.key];
+      if (d && d.imageUrls && d.imageUrls.length > 0) {
+        const alreadyExists = allComponents.some(
+          (c) => c.category === catOpt.key || (catOpt.key === 'ao_ngoai' && c.category === 'ao_ngoai_truoc')
+        );
+        if (!alreadyExists) {
+          const item = buildCostumeItemFromDraft(catOpt.key, d);
+          if (item) {
+            allComponents.push(item);
+          }
+        }
       }
-    }
+    });
 
     if (allComponents.length === 0 && !outfitName.trim()) {
       alert('Vui lòng thêm ít nhất một món hoặc thành phần cho bộ trang phục trước khi chuyển sang Trưng Bày!');
@@ -577,18 +611,15 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
           </div>
 
           {/* Cảm Hứng Sáng Tạo & Nét Đẹp Di Sản */}
-          <div className="md:col-span-12 space-y-1.5 mt-2">
-            <div className="flex items-center justify-between">
+          <div className="md:col-span-12 space-y-2 mt-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <label className="text-xs font-bold text-[#1A1918] flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-[#9E2A2B]" />
                 <span className="uppercase tracking-wider">Cảm Hứng Sáng Tạo & Nét Đẹp Di Sản</span>
               </label>
-              <span className="text-[11px] text-[#78716C]">
-                Ô văn bản mở rộng, hỗ trợ phím TAB để thụt đầu dòng
-              </span>
             </div>
             <textarea
-              rows={6}
+              rows={8}
               value={outfitIntro}
               onChange={(e) => setOutfitIntro(e.target.value)}
               onKeyDown={(e) => {
@@ -606,8 +637,8 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
                   }, 0);
                 }
               }}
-              placeholder="Nhập toàn bộ câu chuyện lịch sử, ý niệm sáng tạo, triết lý may đo và nét đẹp di sản của bộ trang phục này... (Khung văn bản lớn dễ dàng theo dõi toàn bộ nội dung, hỗ trợ nhấn Enter xuống dòng và phím TAB để thụt lề)"
-              className="w-full p-3.5 text-xs md:text-sm text-[#1A1918] bg-white border border-[#DDD6CA] rounded-xl focus:outline-none focus:border-[#9E2A2B] focus:ring-1 focus:ring-[#9E2A2B]/20 transition-all leading-relaxed font-sans resize-y min-h-[140px]"
+              placeholder="Nhập toàn bộ câu chuyện lịch sử, ý niệm sáng tạo, triết lý may đo và nét đẹp di sản của bộ trang phục này..."
+              className="w-full p-4 text-xs md:text-sm text-[#1A1918] bg-[#FDFCFB] border border-[#DDD6CA] rounded-xl focus:outline-none focus:border-[#9E2A2B] focus:ring-2 focus:ring-[#9E2A2B]/20 transition-all leading-relaxed font-sans resize-y min-h-[180px] shadow-2xs"
             />
           </div>
         </div>
@@ -621,7 +652,7 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
               2. Thêm Từng Thành Phần Cho Bộ Trang Phục Này
             </h3>
             <p className="text-xs text-[#78716C] mt-0.5">
-              Chọn danh mục theo chiều ngang bên dưới để may đo thành phần tương ứng.
+              Chọn danh mục theo chiều ngang bên dưới: Bộ trang phục ➔ Áo chính (mặt trước) ➔ Áo chính (mặt sau) ➔ Áo phụ ➔ Thân dưới ➔ Giày dép ➔ Phụ kiện.
             </p>
           </div>
           {outfitComponents.length > 0 && (
@@ -631,8 +662,8 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
           )}
         </div>
 
-        {/* Danh Mục Tabs theo chiều ngang: bộ trang phục -> áo ngoài (mặt trước) -> áo ngoài (mặt sau) -> áo trong -> thân dưới -> giày dép -> phụ kiện */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 overflow-x-auto pb-1">
+        {/* Danh Mục Tabs theo chiều ngang: bộ trang phục -> áo chính (mặt trước) -> áo chính (mặt sau) -> áo phụ -> thân dưới -> giày dép -> phụ kiện */}
+        <div className="flex flex-row overflow-x-auto gap-2.5 pb-2 pt-1 scrollbar-thin">
           {CATEGORY_OPTIONS.map((cat) => {
             const isSelected = activeCategory === cat.key;
             const countInOutfit = outfitComponents.filter((c) => c.category === cat.key).length;
@@ -642,7 +673,7 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
                 key={cat.key}
                 type="button"
                 onClick={() => handleSelectCategory(cat.key)}
-                className={`flex flex-col items-start p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
+                className={`min-w-[150px] flex-1 shrink-0 flex flex-col items-start p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
                   isSelected
                     ? 'bg-[#1A1918] text-white border-[#1A1918] shadow-sm'
                     : 'bg-white text-[#1A1918] border-[#DDD6CA] hover:border-[#9E2A2B] hover:bg-[#FAF8F5]'
@@ -683,40 +714,22 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
         {/* CỘT TRÁI: Form Chi Tiết Của Danh Mục Đang Chọn */}
         <div className="lg:col-span-7 bg-white border border-[#DDD6CA] rounded-2xl p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-[#F2EFE9]">
+          <div className="flex items-center justify-between pb-4 border-b border-[#F2EFE9] flex-wrap gap-2">
             <div>
               <span className="text-xs font-semibold text-[#9E2A2B] uppercase tracking-wider">
                 Đang may đo thành phần
               </span>
               <h3 className="text-lg font-bold text-[#1A1918]">{selectedCatInfo?.label}</h3>
             </div>
-          </div>
-
-          {/* Tên Món Đồ */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#1A1918] flex items-center justify-between">
-              <span>Tên Trang Phục *</span>
-              <span className="text-[11px] font-normal text-[#78716C]">Bắt buộc</span>
-            </label>
-            <input
-              type="text"
-              value={currentDraft.name}
-              onChange={(e) => updateCurrentDraft({ name: e.target.value })}
-              placeholder={`Ví dụ: ${
-                activeCategory === 'ao_ngoai'
-                  ? 'Áo Ngũ Thân Tay Chẽn Gấm Lam'
-                  : activeCategory === 'quan_vay'
-                  ? 'Quần Lãnh Mỹ A Đen Tuyền'
-                  : activeCategory === 'ao_trong'
-                  ? 'Áo Cánh Trắng Lụa Sa'
-                  : activeCategory === 'phu_kien'
-                  ? 'Khăn Đóng Cửu Long Vàng'
-                  : activeCategory === 'giay_dep'
-                  ? 'Hài Thêu Chỉ Kim Tuyến'
-                  : 'Bộ Trang Phục Nhật Bình Triều Nguyễn'
-              }`}
-              className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#DDD6CA] rounded-lg focus:outline-none focus:border-[#9E2A2B] transition-colors"
-            />
+            {outfitName.trim() ? (
+              <span className="text-xs font-medium text-[#2A9D8F] bg-[#FAF8F5] border border-[#DDD6CA] px-3 py-1 rounded-full">
+                Sử dụng chung tên: &quot;{outfitName.trim()}&quot;
+              </span>
+            ) : (
+              <span className="text-xs font-medium text-[#D97706] bg-[#FFFBEB] border border-[#FDE68A] px-2.5 py-1 rounded-full">
+                Chưa nhập tên bộ ở mục 1
+              </span>
+            )}
           </div>
 
           {/* CHỌN MÀU SẮC CHỦ ĐẠO & CHÚ THÍCH MÀU SẮC - HOÀN TOÀN KHÔNG CÓ MÃ MÀU HEX */}
@@ -830,9 +843,9 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
                 {currentDraft.imageUrls.map((url, idx) => (
                   <div
                     key={idx}
-                    className="relative group w-16 h-16 rounded-lg overflow-hidden border border-[#DDD6CA] bg-[#FAF8F5]"
+                    className="relative group w-16 h-16 rounded-lg overflow-hidden border border-[#DDD6CA] bg-transparent flex items-center justify-center"
                   >
-                    <img src={url} alt={`Ảnh ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img src={url} alt={`Ảnh ${idx + 1}`} className="w-full h-full object-contain p-1" />
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(idx)}
@@ -869,7 +882,7 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
             <button
               type="button"
               onClick={handleSaveToCurrentOutfit}
-              disabled={!currentDraft.name.trim()}
+              disabled={!outfitName.trim()}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[#1A1918] hover:bg-[#9E2A2B] rounded-lg transition-colors disabled:opacity-40 cursor-pointer shadow-xs"
             >
               <Plus className="w-4 h-4" />
@@ -893,12 +906,12 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
 
             <div className="mt-4">
               {/* KHUNG HÌNH ẢNH */}
-              <div className="relative aspect-4/3 w-full rounded-xl overflow-hidden bg-[#FAF8F5] border border-[#EAE6DF] flex items-center justify-center">
+              <div className="relative aspect-4/3 w-full rounded-xl overflow-hidden bg-transparent border border-[#EAE6DF] flex items-center justify-center">
                 {currentDraft.imageUrls.length > 0 ? (
                   <img
                     src={currentDraft.imageUrls[0]}
-                    alt={currentDraft.name || 'Xem trước trang phục'}
-                    className="w-full h-full object-cover"
+                    alt={outfitName.trim() || 'Xem trước trang phục'}
+                    className="w-full h-full object-contain p-2"
                   />
                 ) : (
                   <div className="text-center p-6 space-y-2">
@@ -927,7 +940,7 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
               {/* Thông tin mô tả bên dưới xem trước */}
               <div className="mt-3 space-y-1">
                 <h4 className="text-base font-bold text-[#1A1918]">
-                  {currentDraft.name.trim() || `Chưa đặt tên cho ${selectedCatInfo?.shortLabel}`}
+                  {outfitName.trim() ? `${outfitName.trim()} · ${selectedCatInfo?.shortLabel}` : (selectedCatInfo?.shortLabel || 'Thành phần trang phục')}
                 </h4>
                 <div className="flex items-center gap-2 text-xs text-[#78716C] flex-wrap">
                   {(outfitCreator.trim() || currentDraft.creatorName.trim()) && (
@@ -972,7 +985,7 @@ export const TailorWorkshop: React.FC<TailorWorkshopProps> = ({
                           <img
                             src={item.imageUrl}
                             alt={item.name}
-                            className="w-10 h-10 rounded-lg object-cover border border-[#DDD6CA] shrink-0"
+                            className="w-10 h-10 rounded-lg object-contain p-0.5 border border-[#DDD6CA] shrink-0 bg-transparent"
                           />
                         ) : (
                           <div

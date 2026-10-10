@@ -61,7 +61,7 @@ export const CostumeIllustration: React.FC<CostumeIllustrationProps> = ({
   if (activeImage) {
     return (
       <div className={`relative flex items-center justify-center select-none ${sizeClasses[size]}`}>
-        <div className="relative w-full h-full max-h-[520px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#FAF8F5] to-[#F1EDE6] border border-[#E7E2D8] flex items-center justify-center p-3 shadow-xs group">
+        <div className="relative w-full h-full max-h-[520px] rounded-2xl overflow-hidden bg-transparent border border-[#E7E2D8] flex items-center justify-center p-3 shadow-xs group">
           <img
             src={activeImage}
             alt={outerwear?.name || bottom?.name || 'Ảnh trang phục'}

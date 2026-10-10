@@ -305,8 +305,9 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
                   {[
                     { id: 'bo_trang_phuc', label: 'Bộ Trang Phục' },
-                    { id: 'ao_trong', label: 'Áo (Thân Trên)' },
-                    { id: 'ao_ngoai', label: 'Áo Ngoài' },
+                    { id: 'ao_ngoai', label: 'Áo Chính (Mặt Trước)' },
+                    { id: 'ao_ngoai_sau', label: 'Áo Chính (Mặt Sau)' },
+                    { id: 'ao_trong', label: 'Áo Phụ' },
                     { id: 'quan_vay', label: 'Thân Dưới' },
                     { id: 'giay_dep', label: 'Giày Dép' },
                     { id: 'phu_kien', label: 'Phụ Kiện' },

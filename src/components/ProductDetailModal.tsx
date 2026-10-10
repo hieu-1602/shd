@@ -39,14 +39,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         </button>
 
         {/* Left: Visual Presentation Area */}
-        <div className="w-full md:w-5/12 bg-gradient-to-b from-[#FAF8F5] to-[#F1EDE6] p-8 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#EAE6DF]">
+        <div className="w-full md:w-5/12 bg-transparent p-8 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#EAE6DF]">
           {activeImage ? (
             <div className="flex flex-col items-center w-full">
               <img
                 src={activeImage}
                 alt={item.name}
                 referrerPolicy="no-referrer"
-                className="max-h-[340px] w-auto object-contain rounded-lg shadow-sm"
+                className="max-h-[340px] w-auto object-contain rounded-lg drop-shadow-sm"
               />
               {allImages.length > 1 && (
                 <div className="mt-3 flex items-center gap-2 overflow-x-auto max-w-full pb-1">
@@ -55,11 +55,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       key={i}
                       type="button"
                       onClick={() => setPhotoIndex(i)}
-                      className={`w-12 h-14 rounded-md overflow-hidden border transition-all cursor-pointer ${
+                      className={`w-12 h-14 rounded-md overflow-hidden border transition-all cursor-pointer bg-transparent flex items-center justify-center ${
                         photoIndex === i ? 'border-[#9E2A2B] ring-2 ring-[#9E2A2B]/20 scale-105' : 'border-[#DDD6CA] opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img src={img} alt="" className="w-full h-full object-contain p-0.5" />
                     </button>
                   ))}
                 </div>

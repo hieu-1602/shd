@@ -21,12 +21,12 @@ export const CostumeItemVisual: React.FC<CostumeItemVisualProps> = ({
   if (displayImg) {
     return (
       <div
-        className={`relative shrink-0 rounded-lg overflow-hidden bg-[#FAF8F5] border border-[#E7E2D8] flex items-center justify-center shadow-2xs ${className}`}
+        className={`relative shrink-0 rounded-lg overflow-hidden bg-transparent border border-[#E7E2D8] flex items-center justify-center shadow-2xs ${className}`}
       >
         <img
           src={displayImg}
           alt={item.name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-contain p-0.5 transition-transform duration-300 group-hover:scale-105"
         />
         {/* Subtle color badge indicator on top right */}
         <div
@@ -75,7 +75,7 @@ export const CostumeItemVisual: React.FC<CostumeItemVisualProps> = ({
           </g>
         )}
 
-        {/* 1. ÁO NGOÀI (MẶT TRƯỚC) */}
+        {/* 1. ÁO CHÍNH (MẶT TRƯỚC) */}
         {(category === 'ao_ngoai' || category === 'ao_ngoai_truoc') && (
           <g>
             {id === 'ao_tac_ngu_than' ? (
@@ -180,10 +180,10 @@ export const CostumeItemVisual: React.FC<CostumeItemVisualProps> = ({
           </g>
         )}
 
-        {/* ÁO NGOÀI (MẶT SAU) */}
+        {/* ÁO CHÍNH (MẶT SAU) */}
         {category === 'ao_ngoai_sau' && (
           <g>
-            {/* Lưng áo ngoài mặt sau */}
+            {/* Lưng áo chính mặt sau */}
             <g>
               {/* Tay áo buông suông hai bên */}
               <path d="M28 28 L10 32 L8 70 L30 58 Z" fill={activeColor} />
@@ -199,7 +199,7 @@ export const CostumeItemVisual: React.FC<CostumeItemVisualProps> = ({
           </g>
         )}
 
-        {/* 2. THÂN TRÊN (ÁO TRONG) */}
+        {/* 2. ÁO PHỤ */}
         {category === 'ao_trong' && (
           <g>
             {id === 'ao_yem_lua_theu_hoa' ? (

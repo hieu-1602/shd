@@ -71,7 +71,7 @@ export const LookbookCardModal: React.FC<LookbookCardModalProps> = ({ outfit, on
           </div>
 
           {/* Visual Centerpiece */}
-          <div className="relative rounded-lg border border-[#EDE8DF] p-6 flex flex-col items-center justify-center shadow-2xs overflow-hidden bg-gradient-to-b from-[#FBFBFA] to-[#F5F2EB]">
+          <div className="relative rounded-lg border border-[#EDE8DF] p-6 flex flex-col items-center justify-center shadow-2xs overflow-hidden bg-transparent">
             <div className="relative z-10 w-full max-w-sm flex items-center justify-center py-2">
               {outfit.customImage || outfit.fullOutfit?.imageUrl ? (
                 <img
@@ -138,11 +138,11 @@ export const LookbookCardModal: React.FC<LookbookCardModalProps> = ({ outfit, on
               </div>
             )}
             <div>
-              <span className="text-[10px] text-[#78716C] uppercase block">Áo Đầu Tiên / Thân Trên</span>
+              <span className="text-[10px] text-[#78716C] uppercase block">Áo Phụ</span>
               <span className="font-semibold text-[#1A1918]">{outfit.innerwear?.name || 'Tự do'}</span>
             </div>
             <div>
-              <span className="text-[10px] text-[#78716C] uppercase block">Áo Ngoài</span>
+              <span className="text-[10px] text-[#78716C] uppercase block">Áo Chính (Mặt Trước)</span>
               <span className="font-semibold text-[#1A1918]">{outfit.outerwear?.name || 'Tự do'}</span>
             </div>
             <div>

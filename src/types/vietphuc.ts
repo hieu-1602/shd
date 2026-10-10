@@ -1,14 +1,14 @@
 export type CostumeCategory = 
   | 'bo_trang_phuc' // Bộ trang phục
-  | 'ao_ngoai' // Áo ngoài (mặt trước)
-  | 'ao_ngoai_truoc' // Áo ngoài (mặt trước)
-  | 'ao_ngoai_sau' // Áo ngoài (mặt sau)
-  | 'ao_trong'  // Áo trong
+  | 'ao_ngoai' // Áo chính (mặt trước)
+  | 'ao_ngoai_truoc' // Áo chính (mặt trước)
+  | 'ao_ngoai_sau' // Áo chính (mặt sau)
+  | 'ao_trong'  // Áo phụ
   | 'quan_vay'  // Thân dưới (Quần / Váy)
   | 'giay_dep' // Giày dép
   | 'phu_kien'; // Phụ kiện
 
-// Thứ tự chuẩn xác theo yêu cầu: bộ trang phục -> áo ngoài (mặt trước) -> áo ngoài (mặt sau) -> áo trong -> thân dưới -> giày dép -> phụ kiện
+// Thứ tự chuẩn xác theo yêu cầu: bộ trang phục -> áo chính (mặt trước) -> áo chính (mặt sau) -> áo phụ -> thân dưới -> giày dép -> phụ kiện
 export const ORDERED_CATEGORIES: CostumeCategory[] = [
   'bo_trang_phuc',
   'ao_ngoai',
@@ -21,10 +21,10 @@ export const ORDERED_CATEGORIES: CostumeCategory[] = [
 
 export const CATEGORY_LABELS: Record<CostumeCategory, string> = {
   bo_trang_phuc: 'BỘ TRANG PHỤC',
-  ao_ngoai: 'ÁO NGOÀI (MẶT TRƯỚC)',
-  ao_ngoai_truoc: 'ÁO NGOÀI (MẶT TRƯỚC)',
-  ao_ngoai_sau: 'ÁO NGOÀI (MẶT SAU)',
-  ao_trong: 'ÁO TRONG',
+  ao_ngoai: 'ÁO CHÍNH (MẶT TRƯỚC)',
+  ao_ngoai_truoc: 'ÁO CHÍNH (MẶT TRƯỚC)',
+  ao_ngoai_sau: 'ÁO CHÍNH (MẶT SAU)',
+  ao_trong: 'ÁO PHỤ',
   quan_vay: 'THÂN DƯỚI',
   giay_dep: 'GIÀY DÉP',
   phu_kien: 'PHỤ KIỆN',

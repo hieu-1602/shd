@@ -13,8 +13,10 @@ interface WardrobeDrawerProps {
 }
 
 const CATEGORY_NAMES: Record<string, string> = {
-  ao_ngoai: 'Áo Ngoài',
-  ao_trong: 'Thân Trên',
+  bo_trang_phuc: 'Bộ Trang Phục',
+  ao_ngoai: 'Áo Chính (Mặt Trước)',
+  ao_ngoai_sau: 'Áo Chính (Mặt Sau)',
+  ao_trong: 'Áo Phụ',
   quan_vay: 'Thân Dưới',
   phu_kien: 'Phụ Kiện',
   giay_dep: 'Giày Dép',

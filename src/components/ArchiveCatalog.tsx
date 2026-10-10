@@ -132,7 +132,7 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
               >
                 {/* Visual Image Presentation Area - Click to open in Trưng Bày */}
                 <div
-                  className="relative w-full aspect-3/4 bg-gradient-to-b from-[#FAF8F5] to-[#F1EDE6] overflow-hidden flex items-center justify-center p-4"
+                  className="relative w-full aspect-3/4 bg-transparent overflow-hidden flex items-center justify-center p-3"
                   title={`Bấm để xem chi tiết "${outfit.name}" tại trang Trưng Bày`}
                 >
                   {displayImg ? (
@@ -140,7 +140,7 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
                       src={displayImg}
                       alt={outfit.name}
                       loading="lazy"
-                      className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500 ease-out"
+                      className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
                   ) : (
                     <div className="text-center p-6 space-y-2">

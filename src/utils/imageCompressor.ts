@@ -55,14 +55,15 @@ export const compressImageFile = (
           return;
         }
 
-        // Smooth image rendering
+        // Ensure canvas is completely transparent - absolutely no background added
+        ctx.clearRect(0, 0, width, height);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convert to web-optimized JPEG
+        // Luôn bảo toàn 100% độ trong suốt cho ảnh xóa phông (PNG không thêm nền)
         try {
-          const optimized = canvas.toDataURL('image/jpeg', quality);
+          const optimized = canvas.toDataURL('image/png');
           resolve(optimized);
         } catch {
           resolve(dataUrl);

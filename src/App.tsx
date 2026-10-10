@@ -15,6 +15,7 @@ import { CulturalGuideSection } from './components/CulturalGuideSection';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { LookbookCardModal } from './components/LookbookCardModal';
 import { WardrobeDrawer } from './components/WardrobeDrawer';
+import { SideBySideComparison } from './components/SideBySideComparison';
 import { Footer } from './components/Footer';
 import { safeSetLocalStorage, cleanupLegacyStorageKeys } from './utils/imageCompressor';
 import {
@@ -29,7 +30,7 @@ import {
 const STORAGE_KEY_COSTUMES = 'vietphuc_costumes_v1';
 const STORAGE_KEY_WARDROBE = 'vietphuc_wardrobe_v1';
 const STORAGE_KEY_LOOKBOOKS = 'cophuc_remix_lookbooks_v1';
-const STORAGE_KEY_OUTFITS = 'vietphuc_custom_outfits_v3';
+const STORAGE_KEY_OUTFITS = 'vietphuc_custom_outfits_v4';
 
 export default function App() {
   // Navigation Tab State: Trang Chủ, Xưởng May, Trưng Bày, Lookbook, Quy Chuẩn
@@ -133,6 +134,7 @@ export default function App() {
   useEffect(() => {
     let isMounted = true;
     cleanupLegacyStorageKeys();
+    localStorage.removeItem('vietphuc_custom_outfits_v3');
 
     const fetchSharedData = async () => {
       try {
@@ -142,55 +144,19 @@ export default function App() {
         if (!isMounted) return;
 
         // If server has data, sync into state
-        if (Array.isArray(data.costumes) && data.costumes.length > 0) {
+        if (Array.isArray(data.costumes)) {
           setCostumes(data.costumes);
-        } else {
-          // If server is empty but client has local costumes, push them to server to initialize shared data
-          const localSaved = localStorage.getItem(STORAGE_KEY_COSTUMES);
-          if (localSaved) {
-            try {
-              const parsed = JSON.parse(localSaved);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                for (const item of parsed) {
-                  await fetch('/api/costumes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(item),
-                  });
-                }
-              }
-            } catch (e) {
-              // Ignore
-            }
-          }
+          safeSetLocalStorage(STORAGE_KEY_COSTUMES, data.costumes);
         }
 
-        if (Array.isArray(data.lookbooks) && data.lookbooks.length > 0) {
+        if (Array.isArray(data.lookbooks)) {
           setLookbooks(data.lookbooks);
         }
 
-        // Sync outfits
-        if (Array.isArray(data.outfits) && data.outfits.length > 0) {
+        // Sync outfits from server database
+        if (Array.isArray(data.outfits)) {
           setOutfits(data.outfits);
-        } else {
-          // If server is empty but client has local outfits, push to server
-          const localOutfitsSaved = localStorage.getItem(STORAGE_KEY_OUTFITS);
-          if (localOutfitsSaved) {
-            try {
-              const parsed = JSON.parse(localOutfitsSaved);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                for (const item of parsed) {
-                  await fetch('/api/outfits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(item),
-                  });
-                }
-              }
-            } catch (e) {
-              // Ignore
-            }
-          }
+          safeSetLocalStorage(STORAGE_KEY_OUTFITS, data.outfits);
         }
       } catch (err) {
         console.warn('Could not sync with shared server dataset:', err);
@@ -454,7 +420,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // CMS Handlers: Tự do thêm & xóa trang phục kèm đồng bộ bộ dữ liệu chung
+  // CMS Handlers: Tự do thêm & xóa trang phục kèm đồng bộ cơ sở dữ liệu PostgreSQL
   const handleAddCostume = async (newItem: CostumeItem) => {
     setCostumes((prev) => [newItem, ...prev.filter((c) => c.id !== newItem.id)]);
     try {
@@ -463,8 +429,16 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newItem),
       });
+      const syncRes = await fetch('/api/data');
+      if (syncRes.ok) {
+        const syncData = await syncRes.json();
+        if (Array.isArray(syncData.costumes)) {
+          setCostumes(syncData.costumes);
+          localStorage.setItem(STORAGE_KEY_COSTUMES, JSON.stringify(syncData.costumes));
+        }
+      }
     } catch (err) {
-      console.error('Failed to sync added costume with shared dataset:', err);
+      console.error('Failed to sync added costume with database:', err);
     }
   };
 
@@ -477,7 +451,7 @@ export default function App() {
         body: JSON.stringify(updatedItem),
       });
     } catch (err) {
-      console.error('Failed to sync updated costume with shared dataset:', err);
+      console.error('Failed to sync updated costume with database:', err);
     }
   };
 
@@ -489,7 +463,7 @@ export default function App() {
         method: 'DELETE',
       });
     } catch (err) {
-      console.error('Failed to sync deleted costume with shared dataset:', err);
+      console.error('Failed to sync deleted costume with database:', err);
     }
   };
 
@@ -515,23 +489,51 @@ export default function App() {
           body: JSON.stringify(item),
         });
       } catch (err) {
-        console.error('Failed to import costume to shared dataset:', err);
+        console.error('Failed to import costume to database:', err);
       }
     }
   };
 
-  // Outfit actions with shared server sync
+  // Outfit actions: Lưu đồng bộ vào bảng Invoices và bảng Costumes trong PostgreSQL Database
   const handleSaveOutfit = async (newOutfit: CustomOutfit) => {
     setOutfits((prev) => [newOutfit, ...prev.filter((o) => o.id !== newOutfit.id)]);
     setSelectedOutfitId(newOutfit.id);
     try {
+      // 1. Lưu bộ trang phục vào Database bảng Invoices
       await fetch('/api/outfits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOutfit),
       });
+
+      // 2. Lưu từng thành phần riêng lẻ của bộ vào bảng Costumes để đồng bộ ở mọi nơi
+      if (Array.isArray(newOutfit.components) && newOutfit.components.length > 0) {
+        await Promise.all(
+          newOutfit.components.map((comp) =>
+            fetch('/api/costumes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(comp),
+            }).catch(console.error)
+          )
+        );
+      }
+
+      // 3. Đồng bộ lại dữ liệu mới nhất từ server
+      const syncRes = await fetch('/api/data');
+      if (syncRes.ok) {
+        const syncData = await syncRes.json();
+        if (Array.isArray(syncData.outfits)) {
+          setOutfits(syncData.outfits);
+          safeSetLocalStorage(STORAGE_KEY_OUTFITS, syncData.outfits);
+        }
+        if (Array.isArray(syncData.costumes)) {
+          setCostumes(syncData.costumes);
+          safeSetLocalStorage(STORAGE_KEY_COSTUMES, syncData.costumes);
+        }
+      }
     } catch (err) {
-      console.error('Failed to sync added outfit with shared dataset:', err);
+      console.error('Failed to sync added outfit with database:', err);
     }
   };
 
@@ -544,8 +546,39 @@ export default function App() {
       await fetch(`/api/outfits/${id}`, {
         method: 'DELETE',
       });
+      // Đồng bộ lại dữ liệu sau khi xóa
+      const syncRes = await fetch('/api/data');
+      if (syncRes.ok) {
+        const syncData = await syncRes.json();
+        if (Array.isArray(syncData.outfits)) {
+          setOutfits(syncData.outfits);
+          localStorage.setItem(STORAGE_KEY_OUTFITS, JSON.stringify(syncData.outfits));
+        }
+      }
     } catch (err) {
-      console.error('Failed to delete outfit from shared dataset:', err);
+      console.error('Failed to delete outfit from database:', err);
+    }
+  };
+
+  const handleUpdateOutfit = async (updatedOutfit: CustomOutfit) => {
+    setOutfits((prev) => prev.map((o) => (o.id === updatedOutfit.id ? updatedOutfit : o)));
+    try {
+      await fetch(`/api/outfits/${updatedOutfit.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedOutfit),
+      });
+      // Đồng bộ lại dữ liệu sau khi sửa
+      const syncRes = await fetch('/api/data');
+      if (syncRes.ok) {
+        const syncData = await syncRes.json();
+        if (Array.isArray(syncData.outfits)) {
+          setOutfits(syncData.outfits);
+          localStorage.setItem(STORAGE_KEY_OUTFITS, JSON.stringify(syncData.outfits));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update outfit in database:', err);
     }
   };
 
@@ -589,7 +622,7 @@ export default function App() {
             onSaveOutfit={handleSaveOutfit}
             onFinishAndShowcase={(newOutfit) => {
               if (newOutfit) {
-                handleSaveOutfit(newOutfit);
+                setSelectedOutfitId(newOutfit.id);
               }
               setActiveTab('showcase');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -604,6 +637,7 @@ export default function App() {
             selectedOutfitId={selectedOutfitId || (outfits[0] ? outfits[0].id : undefined)}
             onSelectOutfit={(id) => setSelectedOutfitId(id)}
             onDeleteOutfit={handleDeleteOutfit}
+            onUpdateOutfit={handleUpdateOutfit}
             onNavigateToWorkshop={() => {
               setActiveTab('studio');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -657,7 +691,7 @@ export default function App() {
           allCostumes={costumes}
           onClose={() => setIsComparisonOpen(false)}
           onApplyOutfitA={() => setIsComparisonOpen(false)}
-          onApplyOutfitB={(newOutfit) => {
+          onApplyOutfitB={(newOutfit: OutfitComposition) => {
             setCurrentOutfit(newOutfit);
             setIsComparisonOpen(false);
           }}

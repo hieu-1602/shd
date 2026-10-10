@@ -215,7 +215,7 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
                 className="bg-white border border-[#E7E2D8] hover:border-[#C4BDB0] rounded-xl overflow-hidden flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 shadow-2xs group"
               >
                 {/* Visual Card Top */}
-                <div className="relative aspect-[3/4] bg-gradient-to-b from-[#FAF8F5] to-[#F1EDE6] p-4 flex items-center justify-center border-b border-[#EAE6DF] overflow-hidden">
+                <div className="relative aspect-[3/4] bg-transparent p-4 flex items-center justify-center border-b border-[#EAE6DF] overflow-hidden">
                   {preset.fullOutfitImage ? (
                     <img
                       src={preset.fullOutfitImage}
@@ -444,9 +444,9 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
                       Chọn Các Lớp Trang Phục
                     </span>
 
-                    {/* Áo Ngoài */}
+                    {/* Áo Chính (Mặt Trước) */}
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-[#78716C]">Áo Ngoài</label>
+                      <label className="text-[11px] font-medium text-[#78716C]">Áo Chính (Mặt Trước)</label>
                       <select
                         value={selectedOuterId}
                         onChange={(e) => setSelectedOuterId(e.target.value)}
@@ -460,11 +460,11 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
                       </select>
                     </div>
 
-                    {/* Thân Trên (Áo yếm/áo trong) */}
+                    {/* Áo Phụ */}
                     {innerOptions.length > 0 && (
                       <div className="space-y-1">
                         <label className="text-[11px] font-medium text-[#78716C]">
-                          Thân Trên (Tùy chọn)
+                          Áo Phụ (Tùy chọn)
                         </label>
                         <select
                           value={selectedInnerId}
