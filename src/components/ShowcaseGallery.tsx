@@ -65,18 +65,30 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [isEditingIntro, setIsEditingIntro] = useState(false);
   const [editIntroText, setEditIntroText] = useState('');
+  const [outfitToDelete, setOutfitToDelete] = useState<CustomOutfit | null>(null);
+  const [componentToDelete, setComponentToDelete] = useState<CostumeItem | null>(null);
 
   // Bộ trang phục hiện đang được chọn xem
   const activeOutfit =
     outfits.find((o) => o.id === selectedOutfitId) || outfits[0] || null;
 
-  const handleDeleteActiveOutfit = (outfit: CustomOutfit) => {
-    if (
-      window.confirm(
-        `Bạn có chắc chắn muốn xóa bộ trang phục "${outfit.name}" khỏi phòng trưng bày không?`
-      )
-    ) {
-      onDeleteOutfit(outfit.id);
+  const handleConfirmDeleteOutfit = () => {
+    if (outfitToDelete) {
+      onDeleteOutfit(outfitToDelete.id);
+      setOutfitToDelete(null);
+    }
+  };
+
+  const handleConfirmDeleteComponent = () => {
+    if (componentToDelete && activeOutfit && onUpdateOutfit) {
+      const updatedComponents = activeOutfit.components.filter(
+        (c) => c.id !== componentToDelete.id
+      );
+      onUpdateOutfit({
+        ...activeOutfit,
+        components: updatedComponents,
+      });
+      setComponentToDelete(null);
     }
   };
 
@@ -222,9 +234,22 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
                   </div>
                 </div>
 
-                {isSelected && (
-                  <div className="w-2 h-2 rounded-full bg-[#9E2A2B] shrink-0" />
-                )}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {isSelected && (
+                    <div className="w-2 h-2 rounded-full bg-[#9E2A2B] shrink-0" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOutfitToDelete(outfit);
+                    }}
+                    className="p-1.5 text-[#A8A29E] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                    title={`Xóa bộ "${outfit.name}"`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </button>
             );
           })}
@@ -264,7 +289,7 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => handleDeleteActiveOutfit(activeOutfit)}
+              onClick={() => setOutfitToDelete(activeOutfit)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors cursor-pointer"
               title="Xóa bộ trang phục này"
             >
@@ -554,17 +579,31 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
                             </div>
                           </div>
 
-                          {/* Nút xem chi tiết modal nếu có */}
-                          {onOpenItemDetailModal && (
-                            <button
-                              type="button"
-                              onClick={() => onOpenItemDetailModal(item)}
-                              className="w-full py-2 px-3 text-xs font-semibold text-[#1A1918] bg-[#FAF8F5] hover:bg-[#F2EFE9] border border-[#DDD6CA] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-2"
-                            >
-                              <Eye className="w-3.5 h-3.5 text-[#9E2A2B]" />
-                              <span>Xem Chi Tiết Món Đồ</span>
-                            </button>
-                          )}
+                          {/* Nút hành động */}
+                          <div className="flex items-center gap-2 mt-2">
+                            {onOpenItemDetailModal && (
+                              <button
+                                type="button"
+                                onClick={() => onOpenItemDetailModal(item)}
+                                className="flex-1 py-2 px-3 text-xs font-semibold text-[#1A1918] bg-[#FAF8F5] hover:bg-[#F2EFE9] border border-[#DDD6CA] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-[#9E2A2B]" />
+                                <span>Xem Chi Tiết</span>
+                              </button>
+                            )}
+
+                            {onUpdateOutfit && (
+                              <button
+                                type="button"
+                                onClick={() => setComponentToDelete(item)}
+                                className="py-2 px-2.5 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer shrink-0"
+                                title="Xóa món này khỏi bộ trang phục"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Xóa</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -575,6 +614,84 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
           )}
         </div>
       </div>
+
+      {/* Modal xác nhận xóa bộ trang phục */}
+      {outfitToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-[#DDD6CA] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-[#1A1918]">Xác Nhận Xóa Bộ Trang Phục</h4>
+                <p className="text-xs text-[#78716C] mt-0.5">Thao tác này không thể hoàn tác.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-[#3E3C3A] leading-relaxed">
+              Bạn có chắc chắn muốn xóa bộ trang phục <strong>&quot;{outfitToDelete.name}&quot;</strong> khỏi phòng trưng bày không?
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F2EFE9]">
+              <button
+                type="button"
+                onClick={() => setOutfitToDelete(null)}
+                className="px-4 py-2 text-xs font-semibold text-[#57534E] hover:bg-[#FAF8F5] border border-[#DDD6CA] rounded-lg transition-colors cursor-pointer"
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteOutfit}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Xóa Bộ Trang Phục</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal xác nhận gỡ thành phần khỏi bộ trang phục */}
+      {componentToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-[#DDD6CA] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-[#1A1918]">Gỡ Món Khỏi Bộ Trang Phục</h4>
+                <p className="text-xs text-[#78716C] mt-0.5">Xóa thành phần khỏi bộ &quot;{activeOutfit.name}&quot;</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-[#3E3C3A] leading-relaxed">
+              Bạn có chắc chắn muốn gỡ món <strong>&quot;{componentToDelete.name}&quot;</strong> khỏi bộ trang phục này không?
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F2EFE9]">
+              <button
+                type="button"
+                onClick={() => setComponentToDelete(null)}
+                className="px-4 py-2 text-xs font-semibold text-[#57534E] hover:bg-[#FAF8F5] border border-[#DDD6CA] rounded-lg transition-colors cursor-pointer"
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteComponent}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Gỡ Khỏi Bộ</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

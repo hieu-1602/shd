@@ -16,18 +16,18 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
   onDeleteOutfit,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [outfitToDelete, setOutfitToDelete] = useState<CustomOutfit | null>(null);
 
   const handleDeleteClick = (e: React.MouseEvent, outfit: CustomOutfit) => {
     e.stopPropagation();
-    if (
-      window.confirm(
-        `Bạn có chắc chắn muốn xóa bộ trang phục "${outfit.name}" khỏi danh sách không?`
-      )
-    ) {
-      if (onDeleteOutfit) {
-        onDeleteOutfit(outfit.id);
-      }
+    setOutfitToDelete(outfit);
+  };
+
+  const handleConfirmDelete = () => {
+    if (outfitToDelete && onDeleteOutfit) {
+      onDeleteOutfit(outfitToDelete.id);
     }
+    setOutfitToDelete(null);
   };
 
   // Tìm kiếm theo tên bộ trang phục, tác giả hoặc tên thành phần
@@ -247,6 +247,45 @@ export const ArchiveCatalog: React.FC<ArchiveCatalogProps> = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal xác nhận xóa bộ trang phục */}
+      {outfitToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-[#DDD6CA] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-[#1A1918]">Xác Nhận Xóa Bộ Trang Phục</h4>
+                <p className="text-xs text-[#78716C] mt-0.5">Thao tác này không thể hoàn tác.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-[#3E3C3A] leading-relaxed">
+              Bạn có chắc chắn muốn xóa bộ trang phục <strong>&quot;{outfitToDelete.name}&quot;</strong> khỏi danh sách không?
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F2EFE9]">
+              <button
+                type="button"
+                onClick={() => setOutfitToDelete(null)}
+                className="px-4 py-2 text-xs font-semibold text-[#57534E] hover:bg-[#FAF8F5] border border-[#DDD6CA] rounded-lg transition-colors cursor-pointer"
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Xóa Bộ Trang Phục</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>

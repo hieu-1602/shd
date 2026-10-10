@@ -21,6 +21,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   isSaved,
 }) => {
   const [photoIndex, setPhotoIndex] = React.useState(0);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   if (!item) return null;
 
   const allImages = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
@@ -201,19 +202,38 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               )}
             </button>
 
-            <button
-              onClick={() => {
-                if (window.confirm(`Bạn có chắc chắn muốn xóa "${item.name}" khỏi hệ thống không?`)) {
-                  onDeleteCostume(item.id);
-                  onClose();
-                }
-              }}
-              className="inline-flex items-center gap-1 px-3 py-2.5 text-xs font-medium text-[#9E2A2B] hover:bg-[#FDF2F2] border border-[#FAD2D2] rounded-md transition-colors"
-              title="Xóa trang phục khỏi thư viện"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Xóa Món Này</span>
-            </button>
+            {isConfirmingDelete ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmingDelete(false)}
+                  className="px-2.5 py-2 text-xs font-semibold text-[#57534E] hover:bg-[#FAF8F5] border border-[#DDD6CA] rounded-md transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDeleteCostume(item.id);
+                    onClose();
+                  }}
+                  className="inline-flex items-center gap-1 px-3 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Xác Nhận Xóa</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsConfirmingDelete(true)}
+                className="inline-flex items-center gap-1 px-3 py-2.5 text-xs font-medium text-[#9E2A2B] hover:bg-[#FDF2F2] border border-[#FAD2D2] rounded-md transition-colors cursor-pointer"
+                title="Xóa trang phục khỏi thư viện"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Xóa Món Này</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
