@@ -130,10 +130,10 @@ export interface OutfitComposition {
   customColorAccessoryLabel?: string;
   customColorFootwear?: string;
   customColorFootwearLabel?: string;
-  targetOccasion: EventOccasion;
+  targetOccasion: EventOccasion | string;
   lookbookTitle: string;
   creatorName: string;
-  gender?: 'Nam' | 'Nữ'; // Giới tính nhân vật (Nam: vai rộng; Nữ: hông rộng & vai hẹp hơn)
+  gender?: 'Nam' | 'Nữ' | string; // Giới tính nhân vật
   backgroundMedia?: BackgroundMedia;
   customImage?: string; // Ảnh trang phục do người dùng tải lên trực tiếp
   fullOutfitImages?: string[]; // Nhiều hình ảnh của cả bộ trang phục
@@ -144,7 +144,7 @@ export interface CustomOutfit {
   id: string;
   name: string; // Tên của cả bộ trang phục
   creatorName?: string; // Tên tác giả
-  gender?: 'Nam' | 'Nữ';
+  gender?: 'Nam' | 'Nữ' | string;
   createdAt: number;
   imageUrl?: string; // Hình ảnh đại diện cho bộ
   imageUrls?: string[]; // Danh sách các hình ảnh của bộ
@@ -154,7 +154,7 @@ export interface CustomOutfit {
   era?: string;
   region?: string;
   introduction?: string; // Giới thiệu / câu chuyện của bộ
-  occasion?: EventOccasion;
+  occasion?: EventOccasion | string;
   // Các thành phần riêng lẻ của riêng bộ trang phục này:
   components: CostumeItem[];
 }
@@ -177,8 +177,10 @@ export interface CulturalCheckResult {
 export interface LookbookItem {
   id: string;
   title: string;
-  occasion: EventOccasion;
+  occasion: string;
   description: string;
+  imageUrl?: string;
+  imageUrls?: string[];
   fullOutfitId?: string;
   fullOutfitImage?: string;
   introduction?: string;
@@ -187,7 +189,7 @@ export interface LookbookItem {
   bottomId?: string;
   accessoryId?: string;
   footwearId?: string;
-  gender?: 'Nam' | 'Nữ';
+  gender?: string;
   customColorOuter?: string;
   customColorBottom?: string;
   customColorAccessory?: string;

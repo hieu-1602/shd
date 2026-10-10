@@ -117,6 +117,9 @@ async function withDbRetry<T>(operation: () => Promise<T>): Promise<T> {
 
 // Invoices (Bộ trang phục / Custom Outfits) Database Helpers
 export async function getAllInvoices() {
+  if (!isDbConfigured()) {
+    return [];
+  }
   try {
     return await withDbRetry(async () => {
       const currentDb = getDb();
@@ -148,6 +151,9 @@ export async function getAllInvoices() {
 }
 
 export async function upsertInvoice(outfit: any) {
+  if (!isDbConfigured()) {
+    return outfit;
+  }
   try {
     return await withDbRetry(async () => {
       const currentDb = getDb();
@@ -207,25 +213,35 @@ export async function upsertInvoice(outfit: any) {
       return outfit;
     });
   } catch (error) {
-    console.warn('Database upsert for invoice warning:', (error as any)?.message || error);
+    if (isDbConfigured()) {
+      console.warn('Database upsert for invoice warning:', (error as any)?.message || error);
+    }
     throw error;
   }
 }
 
 export async function deleteInvoiceById(id: string) {
+  if (!isDbConfigured()) {
+    return;
+  }
   try {
     return await withDbRetry(async () => {
       const currentDb = getDb();
       await currentDb.delete(invoices).where(eq(invoices.id, id));
     });
   } catch (error) {
-    console.warn('Database delete for invoice warning:', (error as any)?.message || error);
+    if (isDbConfigured()) {
+      console.warn('Database delete for invoice warning:', (error as any)?.message || error);
+    }
     throw error;
   }
 }
 
 // Costumes Database Helpers
 export async function getAllCostumes() {
+  if (!isDbConfigured()) {
+    return [];
+  }
   try {
     return await withDbRetry(async () => {
       const currentDb = getDb();
@@ -261,6 +277,9 @@ export async function getAllCostumes() {
 }
 
 export async function upsertCostume(item: any) {
+  if (!isDbConfigured()) {
+    return item;
+  }
   try {
     return await withDbRetry(async () => {
       const currentDb = getDb();
@@ -333,19 +352,26 @@ export async function upsertCostume(item: any) {
       return item;
     });
   } catch (error) {
-    console.warn('Database upsert for costume warning:', (error as any)?.message || error);
+    if (isDbConfigured()) {
+      console.warn('Database upsert for costume warning:', (error as any)?.message || error);
+    }
     throw error;
   }
 }
 
 export async function deleteCostumeById(id: string) {
+  if (!isDbConfigured()) {
+    return;
+  }
   try {
     return await withDbRetry(async () => {
       const currentDb = getDb();
       await currentDb.delete(costumes).where(eq(costumes.id, id));
     });
   } catch (error) {
-    console.warn('Database delete for costume warning:', (error as any)?.message || error);
+    if (isDbConfigured()) {
+      console.warn('Database delete for costume warning:', (error as any)?.message || error);
+    }
     throw error;
   }
 }

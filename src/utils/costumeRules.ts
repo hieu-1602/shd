@@ -69,7 +69,7 @@ export function auditCulturalEtiquette(
   bottom?: CostumeItem,
   accessory?: CostumeItem,
   footwear?: CostumeItem,
-  occasion?: EventOccasion
+  occasion?: EventOccasion | string
 ): CulturalCheckResult {
   const warnings: string[] = [];
   const praises: string[] = [];

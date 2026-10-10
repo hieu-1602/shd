@@ -15,7 +15,7 @@ interface CostumeIllustrationProps {
   footwearColor?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
   showMannequin?: boolean;
-  gender?: 'Nam' | 'Nữ';
+  gender?: 'Nam' | 'Nữ' | string;
   displayMode?: 'mannequin' | 'fullAvatar';
   fitOffset?: { x: number; y: number; scale: number };
   customImage?: string;

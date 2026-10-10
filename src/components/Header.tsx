@@ -81,13 +81,13 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => handleNavClick('lookbook')}
-              className={`whitespace-nowrap transition-colors hover:text-[#1A1918] cursor-pointer capitalize ${
+              className={`whitespace-nowrap transition-colors hover:text-[#1A1918] cursor-pointer ${
                 activeTab === 'lookbook'
                   ? 'text-[#9E2A2B] font-semibold border-b-2 border-[#9E2A2B] pb-1'
                   : 'pb-1'
               }`}
             >
-              lookbook
+              Lookbook
             </button>
 
             <button
@@ -180,7 +180,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-[#1A1918] hover:bg-[#F2EFE9]'
                 }`}
               >
-                <span>lookbook</span>
+                <span>Lookbook</span>
               </button>
 
               <button

@@ -191,12 +191,20 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
               outfit.components.find((c) => c.imageUrl)?.imageUrl;
 
             return (
-              <button
+              <div
                 key={outfit.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => {
                   onSelectOutfit(outfit.id);
                   setSelectedPhotoIndex(0);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectOutfit(outfit.id);
+                    setSelectedPhotoIndex(0);
+                  }
                 }}
                 className={`flex items-center gap-3 p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                   isSelected
@@ -250,7 +258,7 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>

@@ -402,6 +402,11 @@ export default function App() {
     const accessory = costumes.find((c) => c.id === preset.accessoryId);
     const footwear = costumes.find((c) => c.id === preset.footwearId);
 
+    const primaryImage =
+      (preset.imageUrls && preset.imageUrls[0]) ||
+      preset.imageUrl ||
+      preset.fullOutfitImage;
+
     setCurrentOutfit({
       outerwear: outer,
       innerwear: inner,
@@ -415,6 +420,8 @@ export default function App() {
       lookbookTitle: preset.title,
       creatorName: preset.creatorName || 'Bản Phối Lookbook',
       gender: preset.gender || 'Nam',
+      customImage: primaryImage,
+      fullOutfitImages: preset.imageUrls || (primaryImage ? [primaryImage] : []),
     });
     setActiveTab('studio');
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -247,10 +247,12 @@ app.post('/api/costumes', async (req, res) => {
     }
     item = processCostumeImages(item);
 
-    try {
-      await upsertCostume(item);
-    } catch (dbErr) {
-      console.warn('DB upsert costume warning:', dbErr);
+    if (isDbConfigured()) {
+      try {
+        await upsertCostume(item);
+      } catch (dbErr) {
+        console.warn('DB upsert costume warning:', dbErr);
+      }
     }
 
     const existingIndex = sharedData.costumes.findIndex((c: any) => c.id === item.id);
@@ -273,10 +275,12 @@ app.put('/api/costumes/:id', async (req, res) => {
     const { id } = req.params;
     const item = req.body;
 
-    try {
-      await upsertCostume({ ...item, id });
-    } catch (dbErr) {
-      console.warn('DB update costume warning:', dbErr);
+    if (isDbConfigured()) {
+      try {
+        await upsertCostume({ ...item, id });
+      } catch (dbErr) {
+        console.warn('DB update costume warning:', dbErr);
+      }
     }
 
     const existingIndex = sharedData.costumes.findIndex((c: any) => c.id === id);
@@ -299,10 +303,12 @@ app.delete('/api/costumes/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    try {
-      await deleteCostumeById(id);
-    } catch (dbErr) {
-      console.warn('DB delete costume warning:', dbErr);
+    if (isDbConfigured()) {
+      try {
+        await deleteCostumeById(id);
+      } catch (dbErr) {
+        console.warn('DB delete costume warning:', dbErr);
+      }
     }
 
     sharedData.costumes = sharedData.costumes.filter((c: any) => c.id !== id);
@@ -359,10 +365,12 @@ app.post('/api/outfits', async (req, res) => {
     }
     item = processOutfitImages(item);
 
-    try {
-      await upsertInvoice(item);
-    } catch (dbErr) {
-      console.warn('DB upsert invoice warning:', dbErr);
+    if (isDbConfigured()) {
+      try {
+        await upsertInvoice(item);
+      } catch (dbErr) {
+        console.warn('DB upsert invoice warning:', dbErr);
+      }
     }
 
     if (!Array.isArray(sharedData.outfits)) {
@@ -391,10 +399,12 @@ app.put('/api/outfits/:id', async (req, res) => {
     let item = req.body;
     item = processOutfitImages({ ...item, id });
 
-    try {
-      await upsertInvoice(item);
-    } catch (dbErr) {
-      console.warn('DB update invoice warning:', dbErr);
+    if (isDbConfigured()) {
+      try {
+        await upsertInvoice(item);
+      } catch (dbErr) {
+        console.warn('DB update invoice warning:', dbErr);
+      }
     }
 
     if (!Array.isArray(sharedData.outfits)) {
@@ -425,10 +435,12 @@ app.post('/api/batch-sync', async (req, res) => {
       for (let o of outfits) {
         if (!o || !o.id || o.id === 'test_outfit_1') continue;
         o = processOutfitImages(o);
-        try {
-          await upsertInvoice(o);
-        } catch (dbErr) {
-          // Continue
+        if (isDbConfigured()) {
+          try {
+            await upsertInvoice(o);
+          } catch (dbErr) {
+            // Continue
+          }
         }
         const idx = sharedData.outfits.findIndex((item: any) => item.id === o.id);
         if (idx >= 0) {
@@ -444,10 +456,12 @@ app.post('/api/batch-sync', async (req, res) => {
       if (!Array.isArray(sharedData.costumes)) sharedData.costumes = [];
       for (const c of costumes) {
         if (!c || !c.id) continue;
-        try {
-          await upsertCostume(c);
-        } catch (dbErr) {
-          // Continue
+        if (isDbConfigured()) {
+          try {
+            await upsertCostume(c);
+          } catch (dbErr) {
+            // Continue
+          }
         }
         const idx = sharedData.costumes.findIndex((item: any) => item.id === c.id);
         if (idx >= 0) {
@@ -494,10 +508,12 @@ app.delete('/api/outfits/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    try {
-      await deleteInvoiceById(id);
-    } catch (dbErr) {
-      console.warn('DB delete invoice warning:', dbErr);
+    if (isDbConfigured()) {
+      try {
+        await deleteInvoiceById(id);
+      } catch (dbErr) {
+        console.warn('DB delete invoice warning:', dbErr);
+      }
     }
 
     if (Array.isArray(sharedData.outfits)) {
