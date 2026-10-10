@@ -11,6 +11,7 @@ import {
   getAllCostumes,
   upsertCostume,
   deleteCostumeById,
+  isDbConfigured,
 } from './src/db/index.ts';
 
 dotenv.config();
@@ -129,19 +130,24 @@ app.get('/api/data', async (req, res) => {
     let isDbOutfitsSuccess = false;
     let isDbCostumesSuccess = false;
 
-    try {
-      dbOutfits = await getAllInvoices();
-      isDbOutfitsSuccess = true;
-    } catch (e) {
-      console.warn('Could not query invoices table from PostgreSQL:', e);
-      dbOutfits = sharedData.outfits;
-    }
+    if (isDbConfigured()) {
+      try {
+        dbOutfits = await getAllInvoices();
+        isDbOutfitsSuccess = true;
+      } catch (e) {
+        console.warn('Could not query invoices table from PostgreSQL:', e);
+        dbOutfits = sharedData.outfits;
+      }
 
-    try {
-      dbCostumes = await getAllCostumes();
-      isDbCostumesSuccess = true;
-    } catch (e) {
-      console.warn('Could not query costumes table from PostgreSQL:', e);
+      try {
+        dbCostumes = await getAllCostumes();
+        isDbCostumesSuccess = true;
+      } catch (e) {
+        console.warn('Could not query costumes table from PostgreSQL:', e);
+        dbCostumes = sharedData.costumes;
+      }
+    } else {
+      dbOutfits = sharedData.outfits;
       dbCostumes = sharedData.costumes;
     }
 
@@ -175,8 +181,11 @@ app.get('/api/data', async (req, res) => {
 // Dedicated Invoices endpoint for the Invoices Database Table
 app.get('/api/invoices', async (req, res) => {
   try {
-    const list = await getAllInvoices();
-    res.json({ success: true, invoices: list });
+    if (isDbConfigured()) {
+      const list = await getAllInvoices();
+      return res.json({ success: true, invoices: list });
+    }
+    res.json({ success: true, invoices: sharedData.outfits });
   } catch (error: any) {
     res.json({ success: true, invoices: sharedData.outfits });
   }
@@ -189,7 +198,13 @@ app.post('/api/invoices', async (req, res) => {
       return res.json({ success: true, item, invoices: sharedData.outfits });
     }
     item = processOutfitImages(item);
-    await upsertInvoice(item);
+    if (isDbConfigured()) {
+      try {
+        await upsertInvoice(item);
+      } catch (dbErr) {
+        console.warn('DB upsert invoice warning:', dbErr);
+      }
+    }
 
     const existingIndex = sharedData.outfits.findIndex((o: any) => o.id === item.id);
     if (existingIndex >= 0) {

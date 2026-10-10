@@ -11,7 +11,14 @@ declare global {
   var _postgresPool: Pool | undefined;
 }
 
+export const isDbConfigured = (): boolean => {
+  return Boolean(process.env.SQL_HOST && process.env.SQL_DB_NAME);
+};
+
 export const getPool = (): Pool => {
+  if (!isDbConfigured()) {
+    throw new Error('PostgreSQL database not configured (SQL_HOST/SQL_DB_NAME missing)');
+  }
   if (!global._postgresPool) {
     global._postgresPool = new Pool({
       host: process.env.SQL_HOST,
@@ -35,11 +42,53 @@ export const getPool = (): Pool => {
 };
 
 export const createPool = getPool;
-export const getDb = () => drizzle(getPool(), { schema });
-export const db = getDb();
+
+let _db: any;
+try {
+  if (isDbConfigured()) {
+    _db = drizzle(getPool(), { schema });
+  } else {
+    const noOp = {
+      findMany: async () => [],
+      findFirst: async () => null,
+      findUnique: async () => null,
+      create: async (d: any) => d?.data ?? {},
+      update: async (d: any) => d?.data ?? {},
+      delete: async () => ({}),
+    };
+    _db = new Proxy({}, {
+      get: (_, prop) => (prop === 'query' ? new Proxy({}, { get: () => noOp }) : async () => []),
+    });
+  }
+} catch {
+  console.warn('[AI Studio] Database not connected — using fallback');
+  const noOp = {
+    findMany: async () => [],
+    findFirst: async () => null,
+    findUnique: async () => null,
+    create: async (d: any) => d?.data ?? {},
+    update: async (d: any) => d?.data ?? {},
+    delete: async () => ({}),
+  };
+  _db = new Proxy({}, {
+    get: (_, prop) => (prop === 'query' ? new Proxy({}, { get: () => noOp }) : async () => []),
+  });
+}
+
+export const getDb = () => {
+  if (!isDbConfigured()) {
+    return _db;
+  }
+  return drizzle(getPool(), { schema });
+};
+
+export const db = _db;
 
 // Auto-recovery wrapper for transient connection drops (e.g. 57P01 admin shutdown or proxy restart)
 async function withDbRetry<T>(operation: () => Promise<T>): Promise<T> {
+  if (!isDbConfigured()) {
+    throw new Error('PostgreSQL database not configured');
+  }
   try {
     return await operation();
   } catch (error: any) {
@@ -72,7 +121,7 @@ export async function getAllInvoices() {
     return await withDbRetry(async () => {
       const currentDb = getDb();
       const rows = await currentDb.select().from(invoices).orderBy(desc(invoices.createdAt));
-      return rows.map((r) => ({
+      return rows.map((r: any) => ({
         id: r.id,
         name: r.name,
         creatorName: r.creatorName || '',
@@ -91,7 +140,9 @@ export async function getAllInvoices() {
       }));
     });
   } catch (error) {
-    console.warn('Database query for invoices warning:', (error as any)?.message || error);
+    if (isDbConfigured()) {
+      console.warn('Database query for invoices warning:', (error as any)?.message || error);
+    }
     throw error;
   }
 }
@@ -179,7 +230,7 @@ export async function getAllCostumes() {
     return await withDbRetry(async () => {
       const currentDb = getDb();
       const rows = await currentDb.select().from(costumes).orderBy(desc(costumes.createdAt));
-      return rows.map((r) => ({
+      return rows.map((r: any) => ({
         id: r.id,
         name: r.name,
         category: r.category as any,
@@ -202,7 +253,9 @@ export async function getAllCostumes() {
       }));
     });
   } catch (error) {
-    console.warn('Database query for costumes warning:', (error as any)?.message || error);
+    if (isDbConfigured()) {
+      console.warn('Database query for costumes warning:', (error as any)?.message || error);
+    }
     throw error;
   }
 }
