@@ -5,26 +5,54 @@
 
 import React, { useState, useEffect } from 'react';
 import { INITIAL_COSTUMES, PRESET_OUTFITS } from './data/initialCostumes';
-import { CostumeItem, LookbookItem, OutfitComposition } from './types/vietphuc';
-import { Header } from './components/Header';
+import { CostumeItem, LookbookItem, OutfitComposition, CostumeCategory, CustomOutfit, getVietnameseColorName } from './types/vietphuc';
+import { Header, NavigationTab } from './components/Header';
 import { ArchiveCatalog } from './components/ArchiveCatalog';
-import { MixMatchStudio } from './components/MixMatchStudio';
+import { TailorWorkshop } from './components/TailorWorkshop';
+import { ShowcaseGallery } from './components/ShowcaseGallery';
 import { LookbookGallery } from './components/LookbookGallery';
 import { CulturalGuideSection } from './components/CulturalGuideSection';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { LookbookCardModal } from './components/LookbookCardModal';
-import { SideBySideComparison } from './components/SideBySideComparison';
 import { WardrobeDrawer } from './components/WardrobeDrawer';
-import { NoCodeCMSModal } from './components/NoCodeCMSModal';
 import { Footer } from './components/Footer';
+import { safeSetLocalStorage, cleanupLegacyStorageKeys } from './utils/imageCompressor';
+import {
+  loadPersistentOutfits,
+  savePersistentOutfits,
+  loadPersistentCostumes,
+  savePersistentCostumes,
+  loadPersistentLookbooks,
+  savePersistentLookbooks,
+} from './utils/storage';
 
 const STORAGE_KEY_COSTUMES = 'vietphuc_costumes_v1';
 const STORAGE_KEY_WARDROBE = 'vietphuc_wardrobe_v1';
 const STORAGE_KEY_LOOKBOOKS = 'cophuc_remix_lookbooks_v1';
+const STORAGE_KEY_OUTFITS = 'vietphuc_custom_outfits_v3';
 
 export default function App() {
-  // Navigation Tab State
-  const [activeTab, setActiveTab] = useState<'archive' | 'studio' | 'lookbook' | 'guides'>('archive');
+  // Navigation Tab State: Trang Chủ, Xưởng May, Trưng Bày, Lookbook, Quy Chuẩn
+  const [activeTab, setActiveTab] = useState<NavigationTab>('archive');
+
+  // Danh sách các bộ trang phục riêng biệt đã may đo từ Xưởng May
+  const [outfits, setOutfits] = useState<CustomOutfit[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_OUTFITS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    return [];
+  });
+
+  // ID của bộ trang phục đang được chọn xem tại Trưng Bày
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null);
 
   // Costumes list (tự do thêm, sửa, xóa bởi tất cả người dùng)
   const [costumes, setCostumes] = useState<CostumeItem[]>(() => {
@@ -86,9 +114,8 @@ export default function App() {
   const [isLookbookCardOpen, setIsLookbookCardOpen] = useState(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const [isWardrobeDrawerOpen, setIsWardrobeDrawerOpen] = useState(false);
-  const [isCmsModalOpen, setIsCmsModalOpen] = useState(false);
 
-  // Active outfit in MixMatchStudio
+  // Active outfit in ShowcaseGallery / Studio
   const [currentOutfit, setCurrentOutfit] = useState<OutfitComposition>(() => {
     return {
       customColorOuter: '#9E2A2B',
@@ -105,6 +132,7 @@ export default function App() {
   // Sync costumes and lookbooks with server-side shared dataset
   useEffect(() => {
     let isMounted = true;
+    cleanupLegacyStorageKeys();
 
     const fetchSharedData = async () => {
       try {
@@ -140,6 +168,30 @@ export default function App() {
         if (Array.isArray(data.lookbooks) && data.lookbooks.length > 0) {
           setLookbooks(data.lookbooks);
         }
+
+        // Sync outfits
+        if (Array.isArray(data.outfits) && data.outfits.length > 0) {
+          setOutfits(data.outfits);
+        } else {
+          // If server is empty but client has local outfits, push to server
+          const localOutfitsSaved = localStorage.getItem(STORAGE_KEY_OUTFITS);
+          if (localOutfitsSaved) {
+            try {
+              const parsed = JSON.parse(localOutfitsSaved);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                for (const item of parsed) {
+                  await fetch('/api/outfits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(item),
+                  });
+                }
+              }
+            } catch (e) {
+              // Ignore
+            }
+          }
+        }
       } catch (err) {
         console.warn('Could not sync with shared server dataset:', err);
       }
@@ -158,7 +210,11 @@ export default function App() {
 
     // Sync on storage event from another tab
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY_COSTUMES || e.key === STORAGE_KEY_LOOKBOOKS) {
+      if (
+        e.key === STORAGE_KEY_COSTUMES ||
+        e.key === STORAGE_KEY_LOOKBOOKS ||
+        e.key === STORAGE_KEY_OUTFITS
+      ) {
         fetchSharedData();
       }
     };
@@ -172,31 +228,38 @@ export default function App() {
     };
   }, []);
 
-  // Sync costumes to LocalStorage
+  // Sync outfits to LocalStorage safely (prevents QuotaExceededError)
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_COSTUMES, JSON.stringify(costumes));
-    } catch (e) {
-      console.error('Failed to save costumes to LocalStorage', e);
-    }
+    safeSetLocalStorage(STORAGE_KEY_OUTFITS, outfits, (items) =>
+      items.map((o) => ({
+        ...o,
+        imageUrls: o.imageUrls ? o.imageUrls.slice(0, 1) : undefined,
+        components: o.components.map((c) => ({
+          ...c,
+          imageUrls: c.imageUrls ? c.imageUrls.slice(0, 1) : undefined,
+        })),
+      }))
+    );
+  }, [outfits]);
+
+  // Sync costumes to LocalStorage safely
+  useEffect(() => {
+    safeSetLocalStorage(STORAGE_KEY_COSTUMES, costumes, (items) =>
+      items.map((c) => ({
+        ...c,
+        imageUrls: c.imageUrls ? c.imageUrls.slice(0, 1) : undefined,
+      }))
+    );
   }, [costumes]);
 
-  // Sync wardrobe to LocalStorage
+  // Sync wardrobe to LocalStorage safely
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_WARDROBE, JSON.stringify(wardrobeIds));
-    } catch (e) {
-      console.error('Failed to save wardrobe to LocalStorage', e);
-    }
+    safeSetLocalStorage(STORAGE_KEY_WARDROBE, wardrobeIds);
   }, [wardrobeIds]);
 
-  // Sync lookbooks to LocalStorage
+  // Sync lookbooks to LocalStorage safely
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_LOOKBOOKS, JSON.stringify(lookbooks));
-    } catch (e) {
-      console.error('Failed to save lookbooks to LocalStorage', e);
-    }
+    safeSetLocalStorage(STORAGE_KEY_LOOKBOOKS, lookbooks);
   }, [lookbooks]);
 
   // Lookbook actions with shared server sync
@@ -252,9 +315,11 @@ export default function App() {
     setWardrobeIds([]);
   };
 
-  // Send an item to studio immediately
+  // Send an item to showcase immediately
   const handleSendToStudio = (item: CostumeItem) => {
+    const colorLabel = item.colorLabel || getVietnameseColorName(item.heroColor);
     setCurrentOutfit((prev) => {
+      const updatedCreator = item.creatorName || prev.creatorName;
       if (item.category === 'bo_trang_phuc') {
         return {
           ...prev,
@@ -262,22 +327,58 @@ export default function App() {
           customImage: item.imageUrl,
           fullOutfitImages: item.imageUrls || (item.imageUrl ? [item.imageUrl] : []),
           customColorOuter: item.heroColor || prev.customColorOuter,
+          customColorOuterLabel: colorLabel,
           lookbookTitle: item.name,
+          creatorName: updatedCreator,
+          gender: item.gender || prev.gender || 'Nam',
         };
       } else if (item.category === 'ao_ngoai') {
-        return { ...prev, outerwear: item, customColorOuter: item.heroColor };
+        return {
+          ...prev,
+          outerwear: item,
+          customColorOuter: item.heroColor,
+          customColorOuterLabel: colorLabel,
+          creatorName: updatedCreator,
+          gender: item.gender || prev.gender || 'Nam',
+        };
       } else if (item.category === 'ao_trong') {
-        return { ...prev, innerwear: item, customColorInner: item.heroColor };
+        return {
+          ...prev,
+          innerwear: item,
+          customColorInner: item.heroColor,
+          customColorInnerLabel: colorLabel,
+          creatorName: updatedCreator,
+          gender: item.gender || prev.gender || 'Nam',
+        };
       } else if (item.category === 'quan_vay') {
-        return { ...prev, bottom: item, customColorBottom: item.heroColor };
+        return {
+          ...prev,
+          bottom: item,
+          customColorBottom: item.heroColor,
+          customColorBottomLabel: colorLabel,
+          creatorName: updatedCreator,
+          gender: item.gender || prev.gender || 'Nam',
+        };
       } else if (item.category === 'phu_kien') {
-        return { ...prev, accessory: item, customColorAccessory: item.heroColor };
+        return {
+          ...prev,
+          accessory: item,
+          customColorAccessory: item.heroColor,
+          customColorAccessoryLabel: colorLabel,
+          creatorName: updatedCreator,
+        };
       } else if (item.category === 'giay_dep') {
-        return { ...prev, footwear: item };
+        return {
+          ...prev,
+          footwear: item,
+          customColorFootwear: item.heroColor,
+          customColorFootwearLabel: colorLabel,
+          creatorName: updatedCreator,
+        };
       }
       return prev;
     });
-    setActiveTab('studio');
+    setActiveTab('showcase');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -419,74 +520,99 @@ export default function App() {
     }
   };
 
+  // Outfit actions with shared server sync
+  const handleSaveOutfit = async (newOutfit: CustomOutfit) => {
+    setOutfits((prev) => [newOutfit, ...prev.filter((o) => o.id !== newOutfit.id)]);
+    setSelectedOutfitId(newOutfit.id);
+    try {
+      await fetch('/api/outfits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newOutfit),
+      });
+    } catch (err) {
+      console.error('Failed to sync added outfit with shared dataset:', err);
+    }
+  };
+
+  const handleDeleteOutfit = async (id: string) => {
+    setOutfits((prev) => prev.filter((o) => o.id !== id));
+    if (selectedOutfitId === id) {
+      setSelectedOutfitId(null);
+    }
+    try {
+      await fetch(`/api/outfits/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      console.error('Failed to delete outfit from shared dataset:', err);
+    }
+  };
+
   // Get full objects of saved costumes
   const savedCostumesList = costumes.filter((c) => wardrobeIds.includes(c.id));
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#1A1918]">
-      {/* Top Bar Navigation (Không còn đăng nhập/đăng ký) */}
+      {/* Top Bar Navigation */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         wardrobeCount={wardrobeIds.length}
         openWardrobeDrawer={() => setIsWardrobeDrawerOpen(true)}
-        openCmsModal={() => setIsCmsModalOpen(true)}
       />
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {/* Tab 1: Archive Catalog */}
+        {/* Tab 1: Trang Chủ (Bộ sưu tập cổ phục - Bấm vào xem ngay tại Trưng Bày) */}
         {activeTab === 'archive' && (
           <div id="archive-grid">
             <ArchiveCatalog
-              costumes={costumes}
-              onSelectItem={(item) => setSelectedItemForModal(item)}
-              onSendToStudio={handleSendToStudio}
-              onAddToWardrobe={handleToggleWardrobe}
-              onDeleteCostume={handleDeleteCostume}
-              wardrobeIds={wardrobeIds}
-              openCmsModal={() => setIsCmsModalOpen(true)}
+              outfits={outfits}
+              onSelectOutfitAndShowcase={(outfitId) => {
+                setSelectedOutfitId(outfitId);
+                setActiveTab('showcase');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onNavigateToWorkshop={() => {
+                setActiveTab('studio');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onDeleteOutfit={handleDeleteOutfit}
             />
           </div>
         )}
 
-        {/* Tab 2: Mix & Match Studio (Xưởng May Đo & Thử Đồ) */}
+        {/* Tab 2: Xưởng May (Chuyên may đo & tạo bộ trang phục riêng biệt kèm nút Xong để chuyển sang Trưng Bày) */}
         {activeTab === 'studio' && (
-          <MixMatchStudio
-            costumes={costumes}
-            currentOutfit={currentOutfit}
-            setCurrentOutfit={setCurrentOutfit}
-            onDeleteCostume={handleDeleteCostume}
-            onUpdateCostume={handleUpdateCostume}
-            onOpenCmsModal={() => setIsCmsModalOpen(true)}
-            onOpenLookbookCard={() => setIsLookbookCardOpen(true)}
-            onOpenComparison={() => setIsComparisonOpen(true)}
-            onSaveToLookbook={(outfit) => {
-              const newLookbook: LookbookItem = {
-                id: `lookbook_${Date.now()}`,
-                title: outfit.lookbookTitle || 'Bản Phối Cổ Phục Remix',
-                occasion: outfit.targetOccasion,
-                description: outfit.introduction || `Bản phối sáng tạo bởi ${outfit.creatorName || 'Người Yêu Di Sản'}.`,
-                fullOutfitId: outfit.fullOutfit?.id,
-                fullOutfitImage: outfit.fullOutfit?.imageUrl || (outfit.fullOutfitImages && outfit.fullOutfitImages[0]) || outfit.customImage,
-                introduction: outfit.introduction,
-                outerId: outfit.outerwear?.id,
-                innerId: outfit.innerwear?.id,
-                bottomId: outfit.bottom?.id,
-                accessoryId: outfit.accessory?.id,
-                footwearId: outfit.footwear?.id,
-                gender: outfit.gender || 'Nam',
-                customColorOuter: outfit.customColorOuter,
-                customColorBottom: outfit.customColorBottom,
-                customColorAccessory: outfit.customColorAccessory,
-                creatorName: outfit.creatorName,
-              };
-              handleAddLookbook(newLookbook);
+          <TailorWorkshop
+            onSaveOutfit={handleSaveOutfit}
+            onFinishAndShowcase={(newOutfit) => {
+              if (newOutfit) {
+                handleSaveOutfit(newOutfit);
+              }
+              setActiveTab('showcase');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           />
         )}
 
-        {/* Tab 3: Lookbook Gen Z Showcase */}
+        {/* Tab 3: Trưng Bày (Chỉ hiển thị các bộ trang phục đã thêm từ xưởng may, mỗi bộ riêng lẻ hoàn toàn) */}
+        {activeTab === 'showcase' && (
+          <ShowcaseGallery
+            outfits={outfits}
+            selectedOutfitId={selectedOutfitId || (outfits[0] ? outfits[0].id : undefined)}
+            onSelectOutfit={(id) => setSelectedOutfitId(id)}
+            onDeleteOutfit={handleDeleteOutfit}
+            onNavigateToWorkshop={() => {
+              setActiveTab('studio');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onOpenItemDetailModal={(item) => setSelectedItemForModal(item)}
+          />
+        )}
+
+        {/* Tab 4: Lookbook Gen Z Showcase */}
         {activeTab === 'lookbook' && (
           <LookbookGallery
             lookbooks={lookbooks}
@@ -496,11 +622,11 @@ export default function App() {
             onDeleteLookbook={handleDeleteLookbook}
             onResetLookbooks={handleResetLookbooks}
             onLoadPreset={handleLoadPreset}
-            onOpenStudio={() => setActiveTab('studio')}
+            onOpenStudio={() => setActiveTab('showcase')}
           />
         )}
 
-        {/* Tab 4: Cultural Guides & Historical Etiquette */}
+        {/* Tab 5: Cultural Guides & Historical Etiquette */}
         {activeTab === 'guides' && <CulturalGuideSection />}
       </main>
 
@@ -546,21 +672,8 @@ export default function App() {
         onRemoveFromWardrobe={handleRemoveFromWardrobe}
         onClearWardrobe={handleClearWardrobe}
         onSendToStudio={handleSendToStudio}
-        onOpenStudio={() => setActiveTab('studio')}
+        onOpenStudio={() => setActiveTab('showcase')}
       />
-
-      {/* Thêm Trang Phục Modal */}
-      {isCmsModalOpen && (
-        <NoCodeCMSModal
-          costumes={costumes}
-          onAddCostume={handleAddCostume}
-          onDeleteCostume={handleDeleteCostume}
-          onResetToDefaults={handleResetToDefaults}
-          onImportJson={handleImportJson}
-          onClose={() => setIsCmsModalOpen(false)}
-          onEquipToStudio={handleEquipToStudio}
-        />
-      )}
 
       {/* Editorial Footer */}
       <Footer onNavigate={(tab) => setActiveTab(tab)} />

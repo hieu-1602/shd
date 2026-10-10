@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { OutfitComposition } from '../types/vietphuc';
 import { CostumeIllustration } from './CostumeIllustration';
-import { X, Download, Copy, Check, Share2, Sparkles, QrCode } from 'lucide-react';
+import { X, Download, Copy, Check, Share2, QrCode } from 'lucide-react';
 
 interface LookbookCardModalProps {
   outfit: OutfitComposition;
@@ -50,8 +50,8 @@ export const LookbookCardModal: React.FC<LookbookCardModalProps> = ({ outfit, on
         >
           {/* Top Bar of the Card */}
           <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-3 text-xs">
-            <span className="font-bold tracking-widest uppercase font-display text-sm text-[#1A1918]">
-              CỔ PHỤC REMIX
+            <span className="font-bold tracking-widest uppercase font-display text-base text-[#9E2A2B]">
+              CHẠM
             </span>
             <span className="text-[#78716C] tabular-nums font-mono text-[11px]">
               {new Date().toLocaleDateString('vi-VN')}
@@ -61,7 +61,7 @@ export const LookbookCardModal: React.FC<LookbookCardModalProps> = ({ outfit, on
           {/* Outfit Title & Creator */}
           <div className="text-center space-y-1">
             <h2 className="text-2xl md:text-3xl font-normal text-[#1A1918] font-display">
-              {outfit.lookbookTitle || 'Bản Phối Cổ Phục Remix'}
+              {outfit.lookbookTitle || 'Bản Phối CHẠM'}
             </h2>
             <p className="text-xs text-[#57534E]">
               Người Phối: <span className="font-semibold text-[#1A1918]">{outfit.creatorName || 'Người Yêu Di Sản'}</span>
@@ -161,13 +161,12 @@ export const LookbookCardModal: React.FC<LookbookCardModalProps> = ({ outfit, on
 
           {/* Cultural Heritage Stamp Bottom */}
           <div className="flex items-center justify-between pt-3 border-t border-[#E8E2D5] text-[11px] text-[#78716C]">
-            <div className="flex items-center gap-1.5 text-[#9E2A2B] font-serif italic">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="text-[#9E2A2B] font-serif italic">
               <span>Bảo tồn nguyên bản · Cách tân văn minh</span>
             </div>
             <div className="flex items-center gap-1 text-[#1A1918] font-mono text-[10px]">
               <QrCode className="w-4 h-4" />
-              <span>LOOKBOOK #VN2026</span>
+              <span>LOOKBOOK · CHẠM</span>
             </div>
           </div>
         </div>

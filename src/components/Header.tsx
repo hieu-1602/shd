@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import {
   ShoppingBag,
-  PlusCircle,
   Menu,
   X,
   Archive,
   BookOpen,
   Compass,
+  Scissors,
+  Eye,
 } from 'lucide-react';
 
+export type NavigationTab = 'archive' | 'studio' | 'showcase' | 'lookbook' | 'guides';
+
 interface HeaderProps {
-  activeTab: 'archive' | 'studio' | 'lookbook' | 'guides';
-  setActiveTab: (tab: 'archive' | 'studio' | 'lookbook' | 'guides') => void;
+  activeTab: NavigationTab;
+  setActiveTab: (tab: NavigationTab) => void;
   wardrobeCount: number;
   openWardrobeDrawer: () => void;
-  openCmsModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,11 +24,10 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   wardrobeCount,
   openWardrobeDrawer,
-  openCmsModal,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (tab: 'archive' | 'studio' | 'lookbook' | 'guides') => {
+  const handleNavClick = (tab: NavigationTab) => {
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
   };
@@ -38,9 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Zone 1: Wordmark */}
           <button
             onClick={() => handleNavClick('archive')}
-            className="text-xl md:text-2xl font-bold tracking-tight text-[#1A1918] hover:text-[#9E2A2B] transition-colors font-display cursor-pointer"
+            className="text-2xl md:text-3xl font-bold tracking-wider text-[#9E2A2B] hover:text-[#7D2223] transition-colors font-display cursor-pointer"
           >
-            CỔ PHỤC REMIX
+            CHẠM
           </button>
 
           {/* Zone 2: Desktop Navigation Links */}
@@ -68,14 +69,25 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              onClick={() => handleNavClick('lookbook')}
+              onClick={() => handleNavClick('showcase')}
               className={`whitespace-nowrap transition-colors hover:text-[#1A1918] cursor-pointer ${
+                activeTab === 'showcase'
+                  ? 'text-[#9E2A2B] font-semibold border-b-2 border-[#9E2A2B] pb-1'
+                  : 'pb-1'
+              }`}
+            >
+              Trưng Bày
+            </button>
+
+            <button
+              onClick={() => handleNavClick('lookbook')}
+              className={`whitespace-nowrap transition-colors hover:text-[#1A1918] cursor-pointer capitalize ${
                 activeTab === 'lookbook'
                   ? 'text-[#9E2A2B] font-semibold border-b-2 border-[#9E2A2B] pb-1'
                   : 'pb-1'
               }`}
             >
-              Lookbook Gen Z
+              lookbook
             </button>
 
             <button
@@ -86,22 +98,12 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'pb-1'
               }`}
             >
-              Quy Chuẩn Cổ Phục
+              Quy Chuẩn
             </button>
           </nav>
 
-          {/* Zone 3: Actions (Thêm Trang Phục + Tủ Đồ) */}
+          {/* Zone 3: Actions (Chỉ còn Tủ Đồ - Không còn nút Thêm Trang Phục ở ngoài) */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Thêm trang phục - nút nhanh trên máy tính/tablet */}
-            <button
-              onClick={openCmsModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1A1918] bg-[#F1EDE6] hover:bg-[#E7E2D8] border border-[#DDD6CA] rounded-md transition-all whitespace-nowrap cursor-pointer shadow-2xs"
-              title="Thêm hoặc tải ảnh trang phục mới"
-            >
-              <PlusCircle className="w-3.5 h-3.5 text-[#9E2A2B]" />
-              <span>Thêm Trang Phục</span>
-            </button>
-
             {/* Nút Tủ Đồ */}
             <button
               onClick={openWardrobeDrawer}
@@ -139,19 +141,18 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="space-y-1">
               <button
                 onClick={() => handleNavClick('archive')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`w-full flex items-center px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   activeTab === 'archive'
                     ? 'bg-[#9E2A2B] text-white font-semibold shadow-2xs'
                     : 'text-[#1A1918] hover:bg-[#F2EFE9]'
                 }`}
               >
-                <Archive className="w-4 h-4 shrink-0" />
                 <span>Trang Chủ</span>
               </button>
 
               <button
                 onClick={() => handleNavClick('studio')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`w-full flex items-center px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   activeTab === 'studio'
                     ? 'bg-[#9E2A2B] text-white font-semibold shadow-2xs'
                     : 'text-[#1A1918] hover:bg-[#F2EFE9]'
@@ -161,55 +162,51 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               <button
+                onClick={() => handleNavClick('showcase')}
+                className={`w-full flex items-center px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === 'showcase'
+                    ? 'bg-[#9E2A2B] text-white font-semibold shadow-2xs'
+                    : 'text-[#1A1918] hover:bg-[#F2EFE9]'
+                }`}
+              >
+                <span>Trưng Bày</span>
+              </button>
+
+              <button
                 onClick={() => handleNavClick('lookbook')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`w-full flex items-center px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   activeTab === 'lookbook'
                     ? 'bg-[#9E2A2B] text-white font-semibold shadow-2xs'
                     : 'text-[#1A1918] hover:bg-[#F2EFE9]'
                 }`}
               >
-                <Compass className="w-4 h-4 shrink-0" />
-                <span>Lookbook Gen Z</span>
+                <span>lookbook</span>
               </button>
 
               <button
                 onClick={() => handleNavClick('guides')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`w-full flex items-center px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   activeTab === 'guides'
                     ? 'bg-[#9E2A2B] text-white font-semibold shadow-2xs'
                     : 'text-[#1A1918] hover:bg-[#F2EFE9]'
                 }`}
               >
-                <BookOpen className="w-4 h-4 shrink-0" />
-                <span>Quy Chuẩn Cổ Phục</span>
+                <span>Quy Chuẩn</span>
               </button>
             </div>
 
             {/* Mục thao tác nhanh cho điện thoại */}
-            <div className="pt-3 mt-2 border-t border-[#EDE8DF] flex flex-col gap-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    openCmsModal();
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-[#1A1918] bg-[#F1EDE6] hover:bg-[#E7E2D8] border border-[#DDD6CA] rounded-md transition-colors"
-                >
-                  <PlusCircle className="w-3.5 h-3.5 text-[#9E2A2B]" />
-                  <span>Thêm Trang Phục</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    openWardrobeDrawer();
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-white bg-[#1A1918] hover:bg-[#9E2A2B] rounded-md transition-colors"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Tủ Đồ ({wardrobeCount})</span>
-                </button>
-              </div>
+            <div className="pt-3 mt-2 border-t border-[#EDE8DF]">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openWardrobeDrawer();
+                }}
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-white bg-[#1A1918] hover:bg-[#9E2A2B] rounded-md transition-colors"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>{wardrobeCount > 0 ? `Tủ Đồ · ${wardrobeCount}` : 'Tủ Đồ'}</span>
+              </button>
             </div>
           </div>
         )}

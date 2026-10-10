@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { CostumeItem, EventOccasion, LookbookItem, OutfitComposition } from '../types/vietphuc';
 import { CostumeIllustration } from './CostumeIllustration';
 import {
-  Sparkles,
   ArrowRight,
   Plus,
   Trash2,
@@ -150,15 +149,11 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-8 border-b border-[#EAE6DF]">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-[#9E2A2B]">
-            Phong Cách Tiêu Biểu · Lookbook Tuyển Chọn ({lookbooks.length})
+            Phong Cách Tiêu Biểu · Lookbook Tuyển Chọn
           </span>
           <h2 className="text-3xl md:text-4xl font-normal text-[#1A1918] font-display mt-1">
-            Lookbook Cổ Phục Remix
+            Lookbook <span className="text-[#9E2A2B]">CHẠM</span>
           </h2>
-          <p className="text-sm text-[#57534E] mt-1.5 max-w-xl">
-            Các bản phối truyền cảm hứng được thiết kế chuẩn xác theo từng sự kiện của giới trẻ.
-            Bạn có thể tự do thêm các bản phối mới hoặc xóa bớt bất kỳ lúc nào.
-          </p>
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5">
@@ -176,7 +171,6 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
             className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-[#1A1918] bg-white hover:bg-[#FAF8F5] border border-[#DDD6CA] rounded-md transition-all shadow-xs cursor-pointer"
             title="Đến Xưởng May để tự tay thử nghiệm"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#9E2A2B]" />
             <span>Xưởng May</span>
           </button>
         </div>
@@ -204,7 +198,6 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
               onClick={onOpenStudio}
               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#1A1918] bg-[#FAF8F5] hover:bg-[#F1EDE6] border border-[#DDD6CA] rounded-md shadow-xs cursor-pointer transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#9E2A2B]" />
               <span>Đến Xưởng May</span>
             </button>
           </div>
@@ -325,9 +318,8 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
             {/* Modal Header */}
             <div className="p-6 border-b border-[#EAE6DF] flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#9E2A2B] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Bộ Sưu Tập Cá Nhân</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#9E2A2B]">
+                  Bộ Sưu Tập Cá Nhân
                 </span>
                 <h3 className="text-xl font-bold text-[#1A1918] font-display mt-0.5">
                   Thêm Bản Lookbook Mới
@@ -348,9 +340,8 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
               {currentStudioOutfit && (
                 <div className="p-3.5 bg-[#FAF8F5] border border-[#E7E2D8] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="text-xs text-[#57534E]">
-                    <div className="font-bold text-[#1A1918] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#9E2A2B]" />
-                      <span>Đang có trang phục trong Xưởng May</span>
+                    <div className="font-bold text-[#1A1918]">
+                      Đang có trang phục trong Xưởng May
                     </div>
                     <span className="text-[11px] text-[#78716C]">
                       {currentStudioOutfit.outerwear?.name} × {currentStudioOutfit.bottom?.name}

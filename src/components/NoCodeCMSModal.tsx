@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CostumeItem, CostumeCategory } from '../types/vietphuc';
+import { compressImageFile } from '../utils/imageCompressor';
 import {
   X,
   Plus,
@@ -10,7 +11,6 @@ import {
   Trash2,
   Layers,
   ShieldAlert,
-  Sparkles,
   User,
 } from 'lucide-react';
 
@@ -52,20 +52,32 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Handle Image File Upload (Convert to Base64, support multiple images)
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Image File Upload (Auto-compress to prevent LocalStorage Quota Exceeded)
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const result = reader.result as string;
-          setImageUrls((prev) => [...prev, result]);
-          setImageUrl((prev) => prev || result);
-          setImagePreview((prev) => prev || result);
-        };
-        reader.readAsDataURL(file);
-      });
+      const fileList = Array.from(files);
+      for (const file of fileList) {
+        try {
+          const compressed = await compressImageFile(file, 900, 0.8);
+          if (compressed) {
+            setImageUrls((prev) => [...prev, compressed]);
+            setImageUrl((prev) => prev || compressed);
+            setImagePreview((prev) => prev || compressed);
+          }
+        } catch {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            if (result) {
+              setImageUrls((prev) => [...prev, result]);
+              setImageUrl((prev) => prev || result);
+              setImagePreview((prev) => prev || result);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      }
     }
   };
 
@@ -170,8 +182,7 @@ export const NoCodeCMSModal: React.FC<NoCodeCMSModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#EAE6DF]">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#9E2A2B]">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#9E2A2B]">
               <span>Thư Viện Trang Phục Tùy Chỉnh</span>
             </div>
             <h3 className="text-2xl font-normal text-[#1A1918] font-display mt-0.5">

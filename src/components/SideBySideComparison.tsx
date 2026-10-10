@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { OutfitComposition, CostumeItem } from '../types/vietphuc';
 import { CostumeIllustration } from './CostumeIllustration';
 import { analyzeColorHarmony, auditCulturalEtiquette } from '../utils/costumeRules';
-import { X, Sparkles, ArrowRightLeft } from 'lucide-react';
+import { X, ArrowRightLeft } from 'lucide-react';
 
 interface SideBySideComparisonProps {
   currentOutfit: OutfitComposition;
@@ -210,7 +210,6 @@ export const SideBySideComparison: React.FC<SideBySideComparisonProps> = ({
               }}
               className="w-full mt-2 inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#1A1918] hover:bg-[#9E2A2B] rounded-md transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#F4A261]" />
               <span>Áp Dụng Phương Án B Vào Phòng Thử</span>
             </button>
           </div>

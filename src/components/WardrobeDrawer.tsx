@@ -1,6 +1,6 @@
 import React from 'react';
 import { CostumeItem } from '../types/vietphuc';
-import { X, Trash2, Sparkles, ArrowRight, Bookmark } from 'lucide-react';
+import { X, Trash2, ArrowRight, Bookmark } from 'lucide-react';
 
 interface WardrobeDrawerProps {
   isOpen: boolean;
@@ -40,7 +40,7 @@ export const WardrobeDrawer: React.FC<WardrobeDrawerProps> = ({
             <div className="flex items-center gap-2">
               <Bookmark className="w-4 h-4 text-[#9E2A2B]" />
               <h3 className="text-lg font-bold text-[#1A1918] font-display">
-                Tủ Đồ Của Bạn ({savedCostumes.length})
+                Tủ Đồ Của Bạn {savedCostumes.length > 0 ? `· ${savedCostumes.length} món` : ''}
               </h3>
             </div>
             <button
@@ -87,10 +87,10 @@ export const WardrobeDrawer: React.FC<WardrobeDrawerProps> = ({
                           onSendToStudio(item);
                           onClose();
                         }}
-                        className="p-1.5 text-xs text-[#9E2A2B] hover:bg-white rounded transition-colors"
+                        className="p-1.5 text-xs text-[#9E2A2B] hover:bg-white rounded transition-colors font-medium"
                         title="Thử phối món này"
                       >
-                        <Sparkles className="w-3.5 h-3.5" />
+                        Thử phối
                       </button>
 
                       <button
@@ -117,7 +117,6 @@ export const WardrobeDrawer: React.FC<WardrobeDrawerProps> = ({
                 }}
                 className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-semibold text-white bg-[#9E2A2B] hover:bg-[#831F20] rounded-md transition-all shadow-xs"
               >
-                <Sparkles className="w-4 h-4 text-[#F4A261]" />
                 <span>Mở Xưởng May Ngay</span>
                 <ArrowRight className="w-4 h-4" />
               </button>

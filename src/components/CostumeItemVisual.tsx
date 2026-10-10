@@ -75,8 +75,8 @@ export const CostumeItemVisual: React.FC<CostumeItemVisualProps> = ({
           </g>
         )}
 
-        {/* 1. ÁO NGOÀI */}
-        {category === 'ao_ngoai' && (
+        {/* 1. ÁO NGOÀI (MẶT TRƯỚC) */}
+        {(category === 'ao_ngoai' || category === 'ao_ngoai_truoc') && (
           <g>
             {id === 'ao_tac_ngu_than' ? (
               // Áo Tấc (Tay thụng rộng)
@@ -177,6 +177,25 @@ export const CostumeItemVisual: React.FC<CostumeItemVisualProps> = ({
                 <circle cx="63" cy="68" r="1.5" fill="#D4A373" stroke="#333" strokeWidth="0.4" />
               </g>
             )}
+          </g>
+        )}
+
+        {/* ÁO NGOÀI (MẶT SAU) */}
+        {category === 'ao_ngoai_sau' && (
+          <g>
+            {/* Lưng áo ngoài mặt sau */}
+            <g>
+              {/* Tay áo buông suông hai bên */}
+              <path d="M28 28 L10 32 L8 70 L30 58 Z" fill={activeColor} />
+              <path d="M72 28 L90 32 L92 70 L70 58 Z" fill={activeColor} />
+              {/* Thân lưng áo thẳng tắp liền mạch */}
+              <path d="M30 26 Q50 24 70 26 L76 96 Q50 99 24 96 Z" fill={activeColor} />
+              <path d="M30 26 Q50 24 70 26 L76 96 Q50 99 24 96 Z" fill={`url(#sheen_${id})`} />
+              {/* Cổ sau kín đáo */}
+              <path d="M44 20 Q50 22 56 20 L58 26 Q50 28 42 26 Z" fill={activeColor} stroke="rgba(0,0,0,0.2)" strokeWidth="0.8" />
+              {/* Đường sống lưng áo chạy dọc chính giữa biểu trưng cho tính chính trực */}
+              <line x1="50" y1="26" x2="50" y2="98" stroke="rgba(0,0,0,0.25)" strokeWidth="1.2" strokeDasharray="3 2" />
+            </g>
           </g>
         )}
 
@@ -322,7 +341,7 @@ export const CostumeItemVisual: React.FC<CostumeItemVisualProps> = ({
               // Phụ kiện mặc định
               <g>
                 <circle cx="50" cy="50" r="26" fill={activeColor} />
-                <polygon points="50,32 55,44 67,45 58,54 61,66 50,60 39,66 42,54 33,45 45,44" fill="#FFFFFF" opacity="0.8" />
+                <circle cx="50" cy="50" r="14" fill="none" stroke="#FFFFFF" strokeWidth="2" opacity="0.8" />
               </g>
             )}
           </g>

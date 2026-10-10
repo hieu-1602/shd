@@ -31,12 +31,13 @@ function loadSharedData() {
       return {
         costumes: Array.isArray(parsed.costumes) ? parsed.costumes : [],
         lookbooks: Array.isArray(parsed.lookbooks) ? parsed.lookbooks : [],
+        outfits: Array.isArray(parsed.outfits) ? parsed.outfits : [],
       };
     }
   } catch (err) {
     console.error('Error loading shared data:', err);
   }
-  return { costumes: [], lookbooks: [] };
+  return { costumes: [], lookbooks: [], outfits: [] };
 }
 
 let sharedData = loadSharedData();
@@ -52,11 +53,12 @@ function saveSharedData() {
   }
 }
 
-// API: Get all shared costumes and lookbooks
+// API: Get all shared costumes, lookbooks, and outfits
 app.get('/api/data', (req, res) => {
   res.json({
     costumes: sharedData.costumes,
     lookbooks: sharedData.lookbooks,
+    outfits: sharedData.outfits,
     timestamp: new Date().toISOString(),
   });
 });
@@ -153,13 +155,142 @@ app.delete('/api/lookbooks/:id', (req, res) => {
   }
 });
 
+// API: Add or update outfit in shared dataset
+app.post('/api/outfits', (req, res) => {
+  try {
+    const item = req.body;
+    if (!item || !item.id) {
+      return res.status(400).json({ error: 'Invalid outfit item' });
+    }
+
+    if (!Array.isArray(sharedData.outfits)) {
+      sharedData.outfits = [];
+    }
+
+    const existingIndex = sharedData.outfits.findIndex((o: any) => o.id === item.id);
+    if (existingIndex >= 0) {
+      sharedData.outfits[existingIndex] = item;
+    } else {
+      sharedData.outfits.unshift(item);
+    }
+
+    saveSharedData();
+    res.json({ success: true, item, outfits: sharedData.outfits });
+  } catch (error: any) {
+    console.error('Error adding outfit:', error);
+    res.status(500).json({ error: 'Failed to add outfit', message: error?.message });
+  }
+});
+
+// API: Update outfit
+app.put('/api/outfits/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = req.body;
+    if (!Array.isArray(sharedData.outfits)) {
+      sharedData.outfits = [];
+    }
+    const existingIndex = sharedData.outfits.findIndex((o: any) => o.id === id);
+    if (existingIndex >= 0) {
+      sharedData.outfits[existingIndex] = { ...sharedData.outfits[existingIndex], ...item };
+    } else {
+      sharedData.outfits.unshift({ ...item, id });
+    }
+    saveSharedData();
+    res.json({ success: true, outfit: sharedData.outfits.find((o: any) => o.id === id), outfits: sharedData.outfits });
+  } catch (error: any) {
+    console.error('Error updating outfit:', error);
+    res.status(500).json({ error: 'Failed to update outfit', message: error?.message });
+  }
+});
+
+// API: Batch sync to ensure client and server datasets are permanently unified
+app.post('/api/batch-sync', (req, res) => {
+  try {
+    const { outfits, costumes, lookbooks } = req.body;
+    let modified = false;
+
+    if (Array.isArray(outfits)) {
+      if (!Array.isArray(sharedData.outfits)) sharedData.outfits = [];
+      for (const o of outfits) {
+        if (!o || !o.id) continue;
+        const idx = sharedData.outfits.findIndex((item: any) => item.id === o.id);
+        if (idx >= 0) {
+          sharedData.outfits[idx] = { ...sharedData.outfits[idx], ...o };
+        } else {
+          sharedData.outfits.unshift(o);
+        }
+        modified = true;
+      }
+    }
+
+    if (Array.isArray(costumes)) {
+      if (!Array.isArray(sharedData.costumes)) sharedData.costumes = [];
+      for (const c of costumes) {
+        if (!c || !c.id) continue;
+        const idx = sharedData.costumes.findIndex((item: any) => item.id === c.id);
+        if (idx >= 0) {
+          sharedData.costumes[idx] = { ...sharedData.costumes[idx], ...c };
+        } else {
+          sharedData.costumes.unshift(c);
+        }
+        modified = true;
+      }
+    }
+
+    if (Array.isArray(lookbooks)) {
+      if (!Array.isArray(sharedData.lookbooks)) sharedData.lookbooks = [];
+      for (const l of lookbooks) {
+        if (!l || !l.id) continue;
+        const idx = sharedData.lookbooks.findIndex((item: any) => item.id === l.id);
+        if (idx >= 0) {
+          sharedData.lookbooks[idx] = { ...sharedData.lookbooks[idx], ...l };
+        } else {
+          sharedData.lookbooks.unshift(l);
+        }
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      saveSharedData();
+    }
+
+    res.json({
+      success: true,
+      costumes: sharedData.costumes,
+      outfits: sharedData.outfits,
+      lookbooks: sharedData.lookbooks,
+    });
+  } catch (error: any) {
+    console.error('Error batch syncing:', error);
+    res.status(500).json({ error: 'Failed to batch sync', message: error?.message });
+  }
+});
+
+// API: Delete outfit from shared dataset
+app.delete('/api/outfits/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    if (Array.isArray(sharedData.outfits)) {
+      sharedData.outfits = sharedData.outfits.filter((o: any) => o.id !== id);
+    }
+    saveSharedData();
+    res.json({ success: true, outfits: sharedData.outfits });
+  } catch (error: any) {
+    console.error('Error deleting outfit:', error);
+    res.status(500).json({ error: 'Failed to delete outfit', message: error?.message });
+  }
+});
+
 // API: Reset dataset to empty
 app.post('/api/reset-data', (req, res) => {
   try {
     sharedData.costumes = [];
     sharedData.lookbooks = [];
+    sharedData.outfits = [];
     saveSharedData();
-    res.json({ success: true, costumes: [], lookbooks: [] });
+    res.json({ success: true, costumes: [], lookbooks: [], outfits: [] });
   } catch (error: any) {
     console.error('Error resetting data:', error);
     res.status(500).json({ error: 'Failed to reset data', message: error?.message });
